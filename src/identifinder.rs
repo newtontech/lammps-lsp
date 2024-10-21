@@ -10,13 +10,15 @@ use tree_sitter::{Query, QueryCursor, Tree};
 
 use once_cell::sync::Lazy;
 
+// TODO: Switch to Index map for consistent order
+// OR Dashmap for parallelisation
 pub type IdentMap = HashMap<NameAndType, SymbolDefsAndRefs>;
 
 /// Find and store Identifiers in the `tree-sitter` Tree. Stores a `tree_sitter::QueryCursor` for re-use
 /// Symbols can be accessed through the `symbols` method.
 pub struct IdentiFinder {
     cursor: QueryCursor,
-    symbols: HashMap<NameAndType, SymbolDefsAndRefs>,
+    symbols: IdentMap,
 }
 
 impl Debug for IdentiFinder {
@@ -70,8 +72,8 @@ static QUERY_DEF: Lazy<Query> = Lazy::new(|| {
     Query::new(
         &tree_sitter_lammps::LANGUAGE.into(),
         "(fix (fix_id ) @definition.fix) 
-                (compute (compute_id) @definition.compute) 
-                (variable_def (variable) @definition.variable )",
+        (compute (compute_id) @definition.compute) 
+        (variable_def (variable) @definition.variable )",
     )
     .expect("Invalid query for LAMMPS TS Grammar")
 });
@@ -80,16 +82,17 @@ static QUERY_DEF: Lazy<Query> = Lazy::new(|| {
 static QUERY_REF: Lazy<Query> = Lazy::new(|| {
     Query::new(
         &tree_sitter_lammps::LANGUAGE.into(),
-        " (fix_id) @reference.fix  (compute_id) @reference.compute (variable) @reference.variable",
+        "(fix_id) @reference.fix  
+        (compute_id) @reference.compute 
+        (variable) @reference.variable",
     )
     .expect("Invalid query for LAMMPS TS Grammar")
 });
 
 impl IdentiFinder {
     /// Creates a new `IdentiFinder` without searching for the symbols, leaving an empty `symbols`
-    /// map
+    /// map.
     ///
-    /// Fails if the Query used internally is invalid.
     pub fn new_no_parse() -> Self {
         IdentiFinder {
             cursor: QueryCursor::new(),
@@ -108,7 +111,7 @@ impl IdentiFinder {
         &mut self,
         tree: &Tree,
         text: &str,
-    ) -> Result<&HashMap<NameAndType, SymbolDefsAndRefs>, SpannedError<FromNodeError>> {
+    ) -> Result<&IdentMap, SpannedError<FromNodeError>> {
         let captures = self
             .cursor
             .captures(&QUERY_DEF, tree.root_node(), text.as_bytes());
@@ -179,7 +182,7 @@ impl IdentiFinder {
         }
     }
 
-    pub fn symbols(&self) -> &HashMap<NameAndType, SymbolDefsAndRefs> {
+    pub fn symbols(&self) -> &IdentMap {
         &self.symbols
     }
 }
@@ -187,7 +190,7 @@ impl IdentiFinder {
 ///
 /// Note: there is no equivalent for fixes and computes as these generally have sideffects
 /// TODO: add an equivalent for computes. Current blocker is false negatives.
-pub fn unused_references(map: &HashMap<NameAndType, SymbolDefsAndRefs>) -> Vec<UnusedIdent> {
+pub fn unused_references(map: &IdentMap) -> Vec<UnusedIdent> {
     map.iter()
         .filter_map(|(k, v)| {
             // TODO: don't include definitions as references
