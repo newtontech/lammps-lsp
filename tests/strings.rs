@@ -1,7 +1,7 @@
 use lammps_analyser::input_script::{self, InputScript};
 
 #[test]
-fn single_str() {
+fn double_str() {
     let source = include_str!("./fixtures/string/in.double_string");
 
     let result = InputScript::new(source).expect("valid input script");
