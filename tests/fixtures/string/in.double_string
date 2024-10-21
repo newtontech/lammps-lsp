@@ -1,0 +1,9 @@
+variable outputname string nemd1.TH${Thot}.TC${Tcold}
+variable outputname string "nemd1.TH${Thot}.TC${Tcold}"
+
+variable nested_quotes string "nemd1.TH${Thot}.TC'${Tcold}'"
+
+variable simple_exapansion string "$x"
+
+print "# Volume [A^3/atom] Energy [eV/atom]" file ${evsvolfile}
+

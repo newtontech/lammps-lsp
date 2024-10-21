@@ -1,0 +1,171 @@
+---
+source: tests/strings.rs
+expression: result.diagnostics
+---
+[
+    Diagnostic {
+        name: "undefined identifier",
+        severity: Error,
+        span: Span {
+            start: Point {
+                row: 0,
+                column: 47,
+            },
+            end: Point {
+                row: 0,
+                column: 52,
+            },
+        },
+        message: "undefined variable `Tcold`",
+    },
+    Diagnostic {
+        name: "undefined identifier",
+        severity: Error,
+        span: Span {
+            start: Point {
+                row: 1,
+                column: 48,
+            },
+            end: Point {
+                row: 1,
+                column: 53,
+            },
+        },
+        message: "undefined variable `Tcold`",
+    },
+    Diagnostic {
+        name: "undefined identifier",
+        severity: Error,
+        span: Span {
+            start: Point {
+                row: 0,
+                column: 37,
+            },
+            end: Point {
+                row: 0,
+                column: 41,
+            },
+        },
+        message: "undefined variable `Thot`",
+    },
+    Diagnostic {
+        name: "undefined identifier",
+        severity: Error,
+        span: Span {
+            start: Point {
+                row: 1,
+                column: 38,
+            },
+            end: Point {
+                row: 1,
+                column: 42,
+            },
+        },
+        message: "undefined variable `Thot`",
+    },
+    Diagnostic {
+        name: "undefined identifier",
+        severity: Error,
+        span: Span {
+            start: Point {
+                row: 3,
+                column: 41,
+            },
+            end: Point {
+                row: 3,
+                column: 45,
+            },
+        },
+        message: "undefined variable `Thot`",
+    },
+    Diagnostic {
+        name: "undefined identifier",
+        severity: Error,
+        span: Span {
+            start: Point {
+                row: 7,
+                column: 52,
+            },
+            end: Point {
+                row: 7,
+                column: 62,
+            },
+        },
+        message: "undefined variable `evsvolfile`",
+    },
+    Diagnostic {
+        name: "undefined identifier",
+        severity: Error,
+        span: Span {
+            start: Point {
+                row: 5,
+                column: 36,
+            },
+            end: Point {
+                row: 5,
+                column: 37,
+            },
+        },
+        message: "undefined variable `x`",
+    },
+    Diagnostic {
+        name: "unused identifier",
+        severity: Warning,
+        span: Span {
+            start: Point {
+                row: 3,
+                column: 9,
+            },
+            end: Point {
+                row: 3,
+                column: 22,
+            },
+        },
+        message: "unused variable `nested_quotes`",
+    },
+    Diagnostic {
+        name: "unused identifier",
+        severity: Warning,
+        span: Span {
+            start: Point {
+                row: 0,
+                column: 9,
+            },
+            end: Point {
+                row: 0,
+                column: 19,
+            },
+        },
+        message: "unused variable `outputname`",
+    },
+    Diagnostic {
+        name: "unused identifier",
+        severity: Warning,
+        span: Span {
+            start: Point {
+                row: 1,
+                column: 9,
+            },
+            end: Point {
+                row: 1,
+                column: 19,
+            },
+        },
+        message: "unused variable `outputname`",
+    },
+    Diagnostic {
+        name: "unused identifier",
+        severity: Warning,
+        span: Span {
+            start: Point {
+                row: 5,
+                column: 9,
+            },
+            end: Point {
+                row: 5,
+                column: 26,
+            },
+        },
+        message: "unused variable `simple_exapansion`",
+    },
+]
