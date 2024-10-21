@@ -3,6 +3,7 @@
 use crate::ast::{Ident, IdentType};
 use crate::spanned_error::SpannedError;
 use crate::{ast::from_node::FromNodeError, diagnostics::Issue};
+use itertools::Itertools;
 use std::{collections::HashMap, fmt::Debug};
 use thiserror::Error;
 use tree_sitter::{Query, QueryCursor, Tree};
@@ -167,6 +168,7 @@ impl IdentiFinder {
                 }
             })
             .flatten()
+            .sorted_unstable()
             .map(|x| UndefinedIdent { ident: x.clone() })
             .collect();
 
@@ -198,6 +200,8 @@ pub fn unused_references(map: &HashMap<NameAndType, SymbolDefsAndRefs>) -> Vec<U
             }
         })
         .flatten()
+        // Sorted the ident to make deterministic
+        .sorted_unstable()
         .map(|x| UnusedIdent { ident: x.clone() })
         .collect()
 }
@@ -225,7 +229,7 @@ impl From<Ident> for UnusedIdent {
     }
 }
 
-#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq, Ord, PartialOrd)]
 pub struct NameAndType {
     pub name: String,
     pub ident_type: IdentType,

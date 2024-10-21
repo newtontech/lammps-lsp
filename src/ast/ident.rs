@@ -10,7 +10,7 @@ use crate::{
 
 use super::from_node::{FromNode, FromNodeError};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialOrd, Ord)]
 /// Identifiers for LAMMPS fixes, computes, and variables
 /// Hashing only uses the name and type, not locations
 pub struct Ident {
@@ -19,7 +19,7 @@ pub struct Ident {
     pub span: Span,
 }
 
-#[derive(Debug, PartialEq, Eq, Hash, Clone, Copy, Default)]
+#[derive(Debug, PartialEq, Eq, Hash, Clone, Copy, Default, PartialOrd, Ord)]
 pub enum IdentType {
     #[default]
     Variable,
