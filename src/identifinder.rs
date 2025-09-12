@@ -1,4 +1,4 @@
-//! Definies the `Identifinder` type which finds and validates definitions and references.
+//! Definies the [`IdentiFinder`] type which finds and validates definitions and references.
 
 use crate::ast::{Ident, IdentType};
 use crate::spanned_error::SpannedError;
@@ -14,10 +14,13 @@ use once_cell::sync::Lazy;
 // OR Dashmap for parallelisation
 pub type IdentMap = HashMap<NameAndType, SymbolDefsAndRefs>;
 
-/// Find and store Identifiers in the `tree-sitter` Tree. Stores a `tree_sitter::QueryCursor` for re-use
+/// Finds [`Ident`]s in the `tree-sitter` Tree.
+///
 /// Symbols can be accessed through the `symbols` method.
 pub struct IdentiFinder {
+    /// Cursor Stored for re-use
     cursor: QueryCursor,
+    /// Resulting map of symbols
     symbols: IdentMap,
 }
 
