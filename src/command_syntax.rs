@@ -123,28 +123,81 @@ impl<const N_STYLES: usize, const N_KWARG: usize> CommandSyntax<N_STYLES, N_KWAR
     }
 }
 
+/// This macro is an abosolutely atrocious and un-necessary use and abuse of them
+macro_rules! kwarg {
+    ($name:literal,$n:literal) => {
+        KeywordArg {
+            name: $name,
+            nargs: Nargs::Int($n),
+        }
+    };
+}
+
 #[cfg(test)]
 mod test {
 
     use itertools::Itertools;
-    const CREATE_ATOMS: CommandSyntax<5, 0> = CommandSyntax {
+
+    // -   type = atom type (1-Ntypes) of atoms to create (offset for molecule
+    //     creation)
+    //
+    // -   style = *box* or *region* or *single* or *mesh* or *random*
+    //
+    //         *box* args = none
+    //         *region* args = region-ID
+    //           region-ID = particles will only be created if contained in the region
+    //         *single* args = x y z
+    //           x,y,z = coordinates of a single particle (distance units)
+    //         *mesh* args = STL-file
+    //           STL-file = file with triangle mesh in STL format
+    //         *random* args = N seed region-ID
+    //           N = number of particles to create
+    //           seed = random # seed (positive integer)
+    //           region-ID = create atoms within this region, use NULL for entire simulation box
+    //
+    // -   zero or more keyword/value pairs may be appended
+    //
+    // -   keyword = *mol* or *basis* or *ratio* or *subset* or *remap* or
+    //     *var* or *set* or *radscale* or *meshmode* or *rotate* or *overlap*
+    //     or *maxtry* or *units*
+    //
+    //         *mol* values = template-ID seed
+    //           template-ID = ID of molecule template specified in a separate `molecule <molecule>`__ command
+    //           seed = random # seed (positive integer)
+    //         *basis* values = M itype
+    //           M = which basis atom
+    //           itype = atom type (1-N) to assign to this basis atom
+    //         *ratio* values = frac seed
+    //           frac = fraction of lattice sites (0 to 1) to populate randomly
+    //           seed = random # seed (positive integer)
+    //         *subset* values = Nsubset seed
+    //           Nsubset = # of lattice sites to populate randomly
+    //           seed = random # seed (positive integer)
+    //         *remap* value = *yes* or *no*
+    //         *var* value = name = variable name to evaluate for test of atom creation
+    //         *set* values = dim name
+    //           dim = *x* or *y* or *z*
+    //           name = name of variable to set with x, y, or z atom position
+    //         *radscale* value = factor
+    //           factor = scale factor for setting atom radius
+    //         *meshmode* values = mode arg
+    //           mode = *bisect* or *qrand*
+    //           *bisect* arg = radthresh
+    //             radthresh = threshold value for *mesh* to determine when to split triangles (distance units)
+    //           *qrand* arg = density
+    //             density = minimum number density for atoms place on *mesh* triangles (inverse distance squared units)
+    //         *rotate* values = theta Rx Ry Rz
+    //           theta = rotation angle for single molecule (degrees)
+    //           Rx,Ry,Rz = rotation vector for single molecule
+    //         *overlap* value = Doverlap
+    //           Doverlap = only insert if at least this distance from all existing atoms
+    //         *maxtry* value = Ntry
+    //           Ntry = number of attempts to insert a particle before failure
+    //         *units* value = *lattice* or *box*
+    //           *lattice* = the geometry is defined in lattice units
+    //           *box* = the geometry is defined in simulation box units
+    const CREATE_ATOMS: CommandSyntax<5, 13> = CommandSyntax {
         command_name: "create_atoms",
-        // FIXME: Doesn't quite work... Has a normal positional BEFORE the style
-        // TODO: treat styles as mutually exclusive keywords instead???
-        // Could have this be a list of types.
-        // if the last positional is a 'style' then we treat it like a keyword?
-        // ```
-        // struct
-        // positional: [Any,Style],
-        // // Mutually exclusive keywords, thats name must be the last positional arg.
-        // styles : [
-        //          ("box", 0),
-        //         ("region", 1),
-        //         ("single", 3),
-        //         ("mesh", 1),
-        //         ("random", 3),
-        // ]
-        // ```
         n_positional: 2,
         styles: Styles {
             style_position: 2,
@@ -157,7 +210,22 @@ mod test {
             ],
         },
 
-        kwargs: [], // After the style almost want this to be recursive
+        kwargs: [
+            kwarg!("mol", 2),
+            kwarg!("basis", 2),
+            kwarg!("ratio", 2),
+            kwarg!("subset", 2),
+            kwarg!("remap", 1),
+            kwarg!("var", 1),
+            kwarg!("set", 2),
+            kwarg!("radscale", 1),
+            kwarg!("rotate", 4),
+            kwarg!("overlap", 1),
+            kwarg!("maxtry", 1),
+            kwarg!("units", 1),
+            kwarg!("meshmode", 2), // WARN: Kwargs like this could cause problems, they could have a mode and
+                                   // variable args, like a style
+        ],
     };
 
     use super::*;
