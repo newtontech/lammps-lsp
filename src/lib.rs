@@ -26,3 +26,5 @@ pub(crate) mod docs;
 // Command Styles
 pub(crate) mod commands;
 pub(crate) mod styles;
+
+pub(crate) mod command_syntax;
