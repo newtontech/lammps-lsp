@@ -1,3 +1,5 @@
+use std::panic;
+
 use crate::{ast::Argument, styles::FixStyle};
 
 /// A representation of the command/style's syntax
@@ -77,6 +79,12 @@ impl<const N_STYLES: usize, const N_KWARG: usize> CommandSyntax<N_STYLES, N_KWAR
             styles.iter().map(|(k, _)| k).any(|&style| style == word)
         };
 
+        let is_keyword_arg = move |word: &str| {
+            self.kwargs
+                .iter()
+                .find(|KeywordArg { name, nargs }| *name == word)
+        };
+
         let mut style_args = 0;
         let mut style = "";
 
@@ -119,7 +127,18 @@ impl<const N_STYLES: usize, const N_KWARG: usize> CommandSyntax<N_STYLES, N_KWAR
             current += 1;
         }
 
-        todo!("Handle Keyword Args")
+        // remaining args
+
+        let mut args_iter = words[current..].iter();
+
+        while let Some(word) = args_iter.next() {
+            if let Some(kwarg) = is_keyword_arg(word) {
+                todo!("Handle the kwarg and its positionals")
+                // Advance by the number of args
+            } else {
+                panic!("Invalid keyword/trailing argument")
+            }
+        }
     }
 }
 
@@ -258,5 +277,22 @@ mod test {
     fn create_atoms_region_bad() {
         let example1 = "create_atoms 2 region".split_whitespace().collect_vec();
         CREATE_ATOMS.parse(example1);
+    }
+
+    #[test]
+    fn create_atoms_lammps_examples() {
+        let examples = "create_atoms 1 box
+create_atoms 3 region regsphere basis 2 3
+create_atoms 3 region regsphere basis 2 3 ratio 0.5 74637
+create_atoms 3 single 0 0 5
+create_atoms 1 box var v set x xpos set y ypos
+create_atoms 2 random 50 12345 NULL overlap 2.0 maxtry 50
+create_atoms 1 mesh open_box.stl meshmode qrand 0.1 units box
+create_atoms 1 mesh funnel.stl meshmode bisect 4.0 units box radscale 0.9"
+            .lines()
+            .map(|l| l.split_whitespace().collect_vec());
+        for example in examples {
+            CREATE_ATOMS.parse(example);
+        }
     }
 }
