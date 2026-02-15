@@ -1,50 +1,150 @@
 use std::panic;
 
-use crate::{ast::Argument, styles::FixStyle};
+use itertools::Itertools;
+
+use crate::{
+    ast::Argument,
+    styles::{self, FixStyle},
+};
 
 /// A representation of the command/style's syntax
-struct CommandSyntax<const N_STYLES: usize, const N_KWARG: usize> {
+struct CommandSyntax {
     command_name: &'static str,
     n_positional: u32, // TODO: Switch to Nargs later
     /// Mutually exclusive keywords
     /// The style's arguments follow the rest of the positional arguments
     /// Which keyword gives the style is kept in the styles struct
-    styles: Styles<N_STYLES>,
+    styles: Option<Styles>,
     // TODO: make this an array and generate at compile time
-    kwargs: [KeywordArg; N_KWARG],
+    kwargs: Vec<KeywordArg>,
 }
 
-// TODO: Finish this.
-// Trim the first three words away: the fix keyword, the fix id, and the style name.
-// And then use the command again.
-struct FixSyntax {
-    fix_style: FixStyle,
+pub(crate) struct CommandSyntaxBuilder {
+    command_name: &'static str,
+    positional_args: Vec<PositionalArg>,
+    styles: Vec<Style>,
+    style_pos: Option<u32>,
+    kwargs: Vec<KeywordArg>,
+    /// Could this command have more positonal arguments?
+    has_trailing_positionals: bool,
 }
 
-struct KeywordArg {
+impl CommandSyntaxBuilder {
+    pub(crate) fn new(command_name: &'static str) -> Self {
+        Self {
+            command_name,
+            positional_args: Vec::new(),
+            styles: Vec::default(),
+            style_pos: None,
+            kwargs: Vec::new(),
+            has_trailing_positionals: false,
+        }
+    }
+
+    pub(crate) fn add_positional(&mut self, argname: &'static str) {
+        self.positional_args.push(PositionalArg { name: argname })
+    }
+
+    pub(crate) fn add_keyword(&mut self, kwarg: KeywordArg) {
+        self.kwargs.push(kwarg)
+    }
+
+    pub(crate) fn add_kwargs(&mut self, kwargs: impl IntoIterator<Item = KeywordArg>) {
+        for kwarg in kwargs {
+            self.kwargs.push(kwarg);
+        }
+    }
+
+    pub(crate) fn build(self) -> CommandSyntax {
+        todo!("Assert that a command cannot have both styles AND trailing arguments?");
+
+        todo!("Implement command syntax building");
+    }
+
+    pub(crate) fn add_style(&mut self, style: Style) {
+        if self.styles.is_empty() {
+            // If no style added yet, add a `style` pos-arg
+            self.add_positional("style");
+            self.style_pos = Some(self.positional_args.len() as u32);
+        }
+
+        self.styles.push(style);
+    }
+}
+
+#[derive(Debug)]
+pub(crate) struct KeywordArg {
     name: &'static str,
     nargs: Nargs,
+    labels: Option<Vec<&'static str>>,
     // TODO: add types?
 }
 
-struct Styles<const N_STYLES: usize> {
-    style_position: u32,
-    styles: [(&'static str, u32); N_STYLES],
-}
-impl Default for Styles<0> {
-    fn default() -> Self {
-        Styles {
-            style_position: 0,
-            styles: [],
+impl KeywordArg {
+    pub(crate) fn new(name: &'static str, nargs: Nargs, labels: Option<Vec<&'static str>>) -> Self {
+        if let Some(labels) = &labels {
+            match nargs {
+                Nargs::Int(n) => assert_eq!(
+                    labels.len() as u32,
+                    n,
+                    "missmatched number of positional args and labels"
+                ),
+                Nargs::Optional => todo!(),
+                Nargs::ZeroPlus => todo!(),
+                Nargs::OnePlus => todo!(),
+                Nargs::None => assert_eq!(labels.len(), 0),
+            }
+        }
+
+        Self {
+            name,
+            nargs,
+            labels,
         }
     }
 }
 
-// struct PositionalArg {
-//
-// }
+// TODO: See how sub commands work? Maybe this will be similar
+struct Styles {
+    /// Location of the 'style' argument among the positional args
+    style_position: u32,
+    // TODO: Revert back to an array
+    styles: Vec<Style>,
+}
 
-#[derive(Default)]
+impl Styles {
+    fn is_valid_style(&self, style: &str) -> bool {
+        // NOTE: Assuming only a few styles
+        self.styles.iter().map(|s| s.name).contains(&style)
+    }
+
+    fn get_style(&self, style: &str) -> Option<&Style> {
+        self.styles.iter().find(|s| s.name == style)
+    }
+}
+
+impl Default for Styles {
+    fn default() -> Self {
+        Styles {
+            style_position: 0,
+            styles: Vec::new(),
+        }
+    }
+}
+
+#[derive(Debug, Clone, Default)]
+struct Style {
+    name: &'static str,
+    arg_count: u32,
+    arg_names: Option<Vec<&'static str>>,
+}
+
+#[derive(Debug, Clone)]
+struct PositionalArg {
+    name: &'static str,
+}
+
+#[derive(Default, Debug, Copy, Clone)]
 enum Nargs {
     /// Exactly this many arguments.
     Int(u32),
@@ -62,44 +162,42 @@ enum Nargs {
     None,
 }
 
-impl<const N_STYLES: usize, const N_KWARG: usize> CommandSyntax<N_STYLES, N_KWARG> {
+impl CommandSyntax {
     /// NOTE: As an initial Proof of Concept, just working on strings...
-    fn parse(&self, words: Vec<&str>) {
-        let style_pos = if N_STYLES != 0 {
-            self.styles.style_position
-        } else {
-            self.n_positional + 10 // Cannot have a style arument if there are more than
-                                   // expected!!!
-        };
+    // FIXME: Doesn't really parse just validates, and just panics if invalid
+    pub(crate) fn parse(&self, words: Vec<&str>) {
+        // TODO: have alternate between modes reading Nargs args and reading keywords?
+
+        println!("----------");
+
+        /// Some sort of statemachine the parsing is currently in
+        enum Mode {
+            /// Next word is expected to be a keyword
+            FindingKeywords,
+            // TODO: take the clap approach and use ranges?
+            ReadNargs(u32), // Read a known number of args
+            ReadTrailing,   // Read args until a keyword is found
+        }
 
         assert!(words[0] == self.command_name, "Wrong command name");
+        println!("{}", self.command_name);
         let mut current = 1;
 
-        let is_in = |word: &str, styles: &[(&'static str, u32)]| {
-            styles.iter().map(|(k, _)| k).any(|&style| style == word)
-        };
+        // Skip ahead and find the style
+        // TODO: Could do instead when reading the rest of the args.
+        let style = self.determine_style(&words);
 
         let is_keyword_arg = move |word: &str| {
             self.kwargs
                 .iter()
-                .find(|KeywordArg { name, nargs }| *name == word)
+                .find(|KeywordArg { name, .. }| *name == word)
         };
 
-        let mut style_args = 0;
-        let mut style = "";
+        let mut words_iter = words.iter();
 
         for i_pos in 0..self.n_positional {
             if let Some(word) = words.get(current) {
-                if current == style_pos as usize {
-                    let Some((sty, n_style_args)) =
-                        self.styles.styles.iter().find(|(k, v)| k == word)
-                    else {
-                        panic!("invalid style {} for {}", word, self.command_name);
-                    };
-
-                    style_args = *n_style_args;
-                    style = sty;
-                }
+                println!("{word}");
             } else {
                 panic!(
                     "invalid self, expected {} arguments for {}, only found {}",
@@ -109,45 +207,92 @@ impl<const N_STYLES: usize, const N_KWARG: usize> CommandSyntax<N_STYLES, N_KWAR
             current += 1;
         }
 
-        println!("style: {style}");
-        println!("n_style_args: {style_args}");
+        let n_style_args = style.as_ref().map_or(0, |sty| sty.arg_count);
 
-        for i_pos in 0..style_args {
+        println!("style: {:?}", style.as_ref().map_or("N/A", |sty| sty.name));
+        println!("n_style_args: {:?}", n_style_args);
+
+        for i_pos in 0..n_style_args {
             let Some(word) = words.get(current) else {
                 panic!(
-                    "invalid syntax, expected {} arguments for style {}, only found {}",
-                    style_args, style, i_pos
+                    "invalid syntax, expected {} arguments for style `{}`, only found {}",
+                    n_style_args,
+                    style.as_ref().map_or("", |sty| sty.name),
+                    i_pos
                 );
             };
-
-            // TODO: Here, do I abort if I find a keyword, or do I carry on...
-            // See what is commonly done in lammps code
-            // is_keyword_arg(word)
+            println!("{}", word);
 
             current += 1;
         }
 
         // remaining args
 
-        let mut args_iter = words[current..].iter();
+        let mut args_iter = words.into_iter().skip(current);
 
         while let Some(word) = args_iter.next() {
             if let Some(kwarg) = is_keyword_arg(word) {
-                todo!("Handle the kwarg and its positionals")
+                // TODO: advance by the appropriate number of args...
+                // Might not work unless the number of keywords is known
+                println!("{}:", kwarg.name);
+                self.read_arguments(kwarg.nargs, &mut args_iter);
                 // Advance by the number of args
             } else {
-                panic!("Invalid keyword/trailing argument")
+                panic!("Invalid keyword `{word}` or unexpected trailing positional argument")
             }
+        }
+
+        println!("----------");
+    }
+
+    fn n_styles(&self) -> u32 {
+        (self.styles.as_ref().map_or(0, |s| s.styles.len())) as u32
+    }
+
+    fn determine_style(&self, words: &[&str]) -> Option<Style> {
+        let styles = self.styles.as_ref()?;
+        let style_pos = styles.style_position;
+
+        let found_style = words[style_pos as usize];
+
+        let Some(style) = styles.styles.iter().find(|sty| sty.name == found_style) else {
+            panic!("invalid style {} for {}", found_style, self.command_name);
+        };
+
+        Some(style.clone())
+    }
+
+    fn read_arguments<'a>(&self, nargs: Nargs, iter: &mut impl Iterator<Item = &'a str>) {
+        /// TODO: Return something more useful than just panicking on error!!!
+        let nargs = match nargs {
+            Nargs::Int(n) => n,
+            Nargs::None => 0,
+            x => unimplemented!("{:?}", x),
+        };
+
+        let found_args = iter.take(nargs as usize).map(|w| println!("{w}")).count() as u32;
+
+        if found_args < nargs {
+            panic!("expected {} found {} args", nargs, found_args);
         }
     }
 }
 
 /// This macro is an abosolutely atrocious and un-necessary use and abuse of them
+// TODO: is there a way to just add the hints and figure the counts out from them?
 macro_rules! kwarg {
     ($name:literal,$n:literal) => {
         KeywordArg {
             name: $name,
             nargs: Nargs::Int($n),
+            labels:None
+        }
+    };
+    ($name:literal,$n:literal;$($label:literal),+) => {
+        KeywordArg {
+            name: $name,
+            nargs: Nargs::Int($n),
+            labels: Some(vec![$($label),+]),
         }
     };
 }
@@ -215,21 +360,95 @@ mod test {
     //         *units* value = *lattice* or *box*
     //           *lattice* = the geometry is defined in lattice units
     //           *box* = the geometry is defined in simulation box units
-    const CREATE_ATOMS: CommandSyntax<5, 13> = CommandSyntax {
-        command_name: "create_atoms",
-        n_positional: 2,
-        styles: Styles {
-            style_position: 2,
-            styles: [
-                ("box", 0),
-                ("region", 1),
-                ("single", 3),
-                ("mesh", 1),
-                ("random", 3),
-            ],
-        },
 
-        kwargs: [
+    fn create_atoms_syntax() -> CommandSyntax {
+        CommandSyntax {
+            command_name: "create_atoms",
+            n_positional: 2,
+            styles: Some(Styles {
+                style_position: 2,
+                styles: vec![
+                    Style {
+                        name: "box",
+                        arg_count: 0,
+                        ..Default::default()
+                    },
+                    Style {
+                        name: "region",
+                        arg_count: 1,
+                        ..Default::default()
+                    },
+                    Style {
+                        name: "single",
+                        arg_count: 3,
+                        ..Default::default()
+                    },
+                    Style {
+                        name: "mesh",
+                        arg_count: 1,
+                        ..Default::default()
+                    },
+                    Style {
+                        name: "random",
+                        arg_count: 3,
+                        ..Default::default()
+                    },
+                ],
+            }),
+
+            kwargs: vec![
+                kwarg!("mol", 2;"template-ID","seed"),
+                kwarg!("basis", 2),
+                kwarg!("ratio", 2),
+                kwarg!("subset", 2),
+                kwarg!("remap", 1),
+                kwarg!("var", 1),
+                kwarg!("set", 2),
+                kwarg!("radscale", 1),
+                kwarg!("rotate", 4),
+                kwarg!("overlap", 1),
+                kwarg!("maxtry", 1),
+                kwarg!("units", 1),
+                kwarg!("meshmode", 2), // WARN: Kwargs like this could cause problems, they could have a mode and
+                                       // variable args, like a style
+            ],
+        }
+    }
+
+    #[test]
+    fn builder() {
+        let mut builder = CommandSyntaxBuilder::new("create_atoms");
+        builder.add_positional("type");
+        builder.add_style(Style {
+            name: "box",
+            arg_count: 0,
+            arg_names: None,
+        });
+        builder.add_style(Style {
+            name: "region",
+            arg_count: 1,
+            arg_names: Some(vec!["region-ID"]),
+        });
+
+        builder.add_style(Style {
+            name: "single",
+            arg_count: 3,
+            arg_names: Some(vec!["x", "y", "z"]),
+        });
+
+        builder.add_style(Style {
+            name: "mesh",
+            arg_count: 1,
+            arg_names: Some(vec!["STL-file"]),
+        });
+
+        builder.add_style(Style {
+            name: "random",
+            arg_count: 3,
+            arg_names: Some(vec!["N", "seed", "region-ID"]),
+        });
+
+        builder.add_kwargs([
             kwarg!("mol", 2),
             kwarg!("basis", 2),
             kwarg!("ratio", 2),
@@ -244,24 +463,24 @@ mod test {
             kwarg!("units", 1),
             kwarg!("meshmode", 2), // WARN: Kwargs like this could cause problems, they could have a mode and
                                    // variable args, like a style
-        ],
-    };
+        ]);
+    }
 
     use super::*;
 
     #[test]
     fn create_atoms_box() {
         let example1 = "create_atoms 1 box".split_whitespace().collect_vec();
-        CREATE_ATOMS.parse(example1);
+        create_atoms_syntax().parse(example1);
     }
 
     #[test]
-    #[should_panic]
+    #[should_panic = "Invalid keyword `extra_arg` or unexpected trailing positional argument"]
     fn create_atoms_box_bad() {
         let example1 = "create_atoms 1 box extra_arg"
             .split_whitespace()
             .collect_vec();
-        CREATE_ATOMS.parse(example1);
+        create_atoms_syntax().parse(example1);
     }
 
     #[test]
@@ -269,14 +488,22 @@ mod test {
         let example1 = "create_atoms 2 region mybox"
             .split_whitespace()
             .collect_vec();
-        CREATE_ATOMS.parse(example1);
+        create_atoms_syntax().parse(example1);
     }
 
     #[test]
-    #[should_panic]
+    #[should_panic = "invalid syntax, expected 1 arguments for style `region`, only found 0"]
     fn create_atoms_region_bad() {
         let example1 = "create_atoms 2 region".split_whitespace().collect_vec();
-        CREATE_ATOMS.parse(example1);
+        create_atoms_syntax().parse(example1);
+    }
+
+    #[test]
+    fn create_atoms_region_kwarg() {
+        let example1 = "create_atoms 2 region mybox basis 2 3"
+            .split_whitespace()
+            .collect_vec();
+        create_atoms_syntax().parse(example1);
     }
 
     #[test]
@@ -292,7 +519,7 @@ create_atoms 1 mesh funnel.stl meshmode bisect 4.0 units box radscale 0.9"
             .lines()
             .map(|l| l.split_whitespace().collect_vec());
         for example in examples {
-            CREATE_ATOMS.parse(example);
+            create_atoms_syntax().parse(example);
         }
     }
 }
