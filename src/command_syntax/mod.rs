@@ -411,6 +411,7 @@ mod test {
                 kwarg!("units", 1),
                 kwarg!("meshmode", 2), // WARN: Kwargs like this could cause problems, they could have a mode and
                                        // variable args, like a style
+                                       // this one is ok, because it takes only a fixed number.
             ],
         }
     }
