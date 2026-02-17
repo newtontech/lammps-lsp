@@ -46,9 +46,10 @@ impl CommandSyntax {
         }
     }
 
-    pub(crate) fn add_positional(&mut self, argname: &'static str) {
+    pub(crate) fn add_positional(&mut self, argname: &'static str) -> &mut Self {
         self.positional_labels.push(PositionalArg { name: argname });
         self.n_positional += 1;
+        self
     }
 
     pub(crate) fn add_keyword(&mut self, kwarg: KeywordArg) {
