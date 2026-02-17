@@ -176,16 +176,16 @@ pub(crate) enum Nargs {
 // TODO: is there a way to just add the hints and figure the counts out from them?
 macro_rules! kwarg {
     ($name:literal,$n:literal) => {
-        KeywordArg {
+        crate::command_syntax::KeywordArg {
             name: $name,
-            nargs: Nargs::Int($n),
+            nargs: crate::command_syntax::Nargs::Int($n),
             labels:None
         }
     };
     ($name:literal,$n:literal;$($label:literal),+) => {
-        KeywordArg {
+        crate::command_syntax::KeywordArg {
             name: $name,
-            nargs: Nargs::Int($n),
+            nargs: crate::command_syntax::Nargs::Int($n),
             labels: Some(vec![$($label),+]),
         }
     };
