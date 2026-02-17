@@ -1,0 +1,15 @@
+---
+source: src/command_syntax/syntaxes/boundary.rs
+expression: "super::syntax().parse(x)"
+---
+ParseResult {
+    command_name: "boundary",
+    positional: [
+        "p",
+        "p",
+        "f",
+    ],
+    style: None,
+    style_args: [],
+    kwargs: [],
+}
