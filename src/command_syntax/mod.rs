@@ -57,9 +57,15 @@ impl CommandSyntaxBuilder {
     }
 
     pub(crate) fn build(self) -> CommandSyntax {
-        todo!("Assert that a command cannot have both styles AND trailing arguments?");
-
-        todo!("Implement command syntax building");
+        CommandSyntax {
+            command_name: self.command_name,
+            n_positional: self.positional_args.len() as u32,
+            styles: self.style_pos.map(|pos| Styles {
+                style_position: pos,
+                styles: self.styles,
+            }),
+            kwargs: self.kwargs,
+        }
     }
 
     pub(crate) fn add_style(&mut self, style: Style) {
@@ -257,27 +263,27 @@ mod test {
                     Style {
                         name: "box",
                         arg_count: 0,
-                        ..Default::default()
+                        arg_names: None,
                     },
                     Style {
                         name: "region",
                         arg_count: 1,
-                        ..Default::default()
+                        arg_names: Some(vec!["region-ID"]),
                     },
                     Style {
                         name: "single",
                         arg_count: 3,
-                        ..Default::default()
+                        arg_names: Some(vec!["x", "y", "z"]),
                     },
                     Style {
                         name: "mesh",
                         arg_count: 1,
-                        ..Default::default()
+                        arg_names: Some(vec!["STL-file"]),
                     },
                     Style {
                         name: "random",
                         arg_count: 3,
-                        ..Default::default()
+                        arg_names: Some(vec!["N", "seed", "region-ID"]),
                     },
                 ],
             }),
@@ -336,7 +342,7 @@ mod test {
         });
 
         builder.add_kwargs([
-            kwarg!("mol", 2),
+            kwarg!("mol", 2; "template-ID","seed"),
             kwarg!("basis", 2),
             kwarg!("ratio", 2),
             kwarg!("subset", 2),
@@ -351,6 +357,8 @@ mod test {
             kwarg!("meshmode", 2), // WARN: Kwargs like this could cause problems, they could have a mode and
                                    // variable args, like a style
         ]);
+
+        pretty_assertions::assert_eq!(builder.build(), create_atoms_syntax());
     }
 
     use super::*;
