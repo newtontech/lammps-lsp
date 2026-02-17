@@ -8,7 +8,7 @@ use crate::{
 };
 
 /// A representation of the command/style's syntax
-struct CommandSyntax {
+pub(crate) struct CommandSyntax {
     command_name: &'static str,
     n_positional: u32, // TODO: Switch to Nargs later
     /// Mutually exclusive keywords
@@ -162,10 +162,25 @@ enum Nargs {
     None,
 }
 
+#[derive(Debug)]
+struct Kwarg<'a> {
+    name: &'static str,
+    args: Vec<&'a str>,
+}
+
+#[derive(Debug)]
+struct ParseResult<'a> {
+    command_name: &'static str,
+    positional: Vec<&'a str>,
+    style: Option<&'a str>,
+    style_args: Vec<&'a str>,
+    kwargs: Vec<Kwarg<'a>>,
+}
+
 impl CommandSyntax {
     /// NOTE: As an initial Proof of Concept, just working on strings...
     // FIXME: Doesn't really parse just validates, and just panics if invalid
-    pub(crate) fn parse(&self, words: Vec<&str>) {
+    pub(crate) fn parse<'a>(&self, words: Vec<&'a str>) -> ParseResult<'a> {
         // TODO: have alternate between modes reading Nargs args and reading keywords?
 
         println!("----------");
@@ -195,9 +210,12 @@ impl CommandSyntax {
 
         let mut words_iter = words.iter();
 
+        let mut positionals = Vec::with_capacity(self.n_positional as usize);
+
         for i_pos in 0..self.n_positional {
-            if let Some(word) = words.get(current) {
+            if let Some(&word) = words.get(current) {
                 println!("{word}");
+                positionals.push(word);
             } else {
                 panic!(
                     "invalid self, expected {} arguments for {}, only found {}",
@@ -212,8 +230,10 @@ impl CommandSyntax {
         println!("style: {:?}", style.as_ref().map_or("N/A", |sty| sty.name));
         println!("n_style_args: {:?}", n_style_args);
 
+        let mut style_args = Vec::with_capacity(n_style_args as usize);
+
         for i_pos in 0..n_style_args {
-            let Some(word) = words.get(current) else {
+            let Some(&word) = words.get(current) else {
                 panic!(
                     "invalid syntax, expected {} arguments for style `{}`, only found {}",
                     n_style_args,
@@ -222,6 +242,7 @@ impl CommandSyntax {
                 );
             };
             println!("{}", word);
+            style_args.push(word);
 
             current += 1;
         }
@@ -229,13 +250,20 @@ impl CommandSyntax {
         // remaining args
 
         let mut args_iter = words.into_iter().skip(current);
+        let mut kwargs = Vec::new();
 
         while let Some(word) = args_iter.next() {
             if let Some(kwarg) = is_keyword_arg(word) {
                 // TODO: advance by the appropriate number of args...
                 // Might not work unless the number of keywords is known
                 println!("{}:", kwarg.name);
-                self.read_arguments(kwarg.nargs, &mut args_iter);
+                let args = self.read_arguments(kwarg.nargs, &mut args_iter);
+
+                kwargs.push(Kwarg {
+                    name: kwarg.name,
+                    args,
+                });
+
                 // Advance by the number of args
             } else {
                 panic!("Invalid keyword `{word}` or unexpected trailing positional argument")
@@ -243,6 +271,14 @@ impl CommandSyntax {
         }
 
         println!("----------");
+
+        ParseResult {
+            command_name: self.command_name,
+            positional: positionals,
+            style: style.map(|s| s.name),
+            style_args,
+            kwargs,
+        }
     }
 
     fn n_styles(&self) -> u32 {
@@ -262,7 +298,11 @@ impl CommandSyntax {
         Some(style.clone())
     }
 
-    fn read_arguments<'a>(&self, nargs: Nargs, iter: &mut impl Iterator<Item = &'a str>) {
+    fn read_arguments<'a>(
+        &self,
+        nargs: Nargs,
+        iter: &mut impl Iterator<Item = &'a str>,
+    ) -> Vec<&'a str> {
         /// TODO: Return something more useful than just panicking on error!!!
         let nargs = match nargs {
             Nargs::Int(n) => n,
@@ -270,11 +310,19 @@ impl CommandSyntax {
             x => unimplemented!("{:?}", x),
         };
 
-        let found_args = iter.take(nargs as usize).map(|w| println!("{w}")).count() as u32;
+        let found_args = iter
+            .take(nargs as usize)
+            .map(|w| {
+                println!("{w}");
+                w
+            })
+            .collect_vec();
 
-        if found_args < nargs {
-            panic!("expected {} found {} args", nargs, found_args);
+        if (found_args.len() as u32) < nargs {
+            panic!("expected {} found {} args", nargs, found_args.len());
         }
+
+        found_args
     }
 }
 
@@ -481,7 +529,7 @@ mod test {
         let example1 = "create_atoms 1 box extra_arg"
             .split_whitespace()
             .collect_vec();
-        create_atoms_syntax().parse(example1);
+        dbg![create_atoms_syntax().parse(example1)];
     }
 
     #[test]
@@ -489,14 +537,14 @@ mod test {
         let example1 = "create_atoms 2 region mybox"
             .split_whitespace()
             .collect_vec();
-        create_atoms_syntax().parse(example1);
+        dbg![create_atoms_syntax().parse(example1)];
     }
 
     #[test]
     #[should_panic = "invalid syntax, expected 1 arguments for style `region`, only found 0"]
     fn create_atoms_region_bad() {
         let example1 = "create_atoms 2 region".split_whitespace().collect_vec();
-        create_atoms_syntax().parse(example1);
+        dbg![create_atoms_syntax().parse(example1)];
     }
 
     #[test]
@@ -504,7 +552,7 @@ mod test {
         let example1 = "create_atoms 2 region mybox basis 2 3"
             .split_whitespace()
             .collect_vec();
-        create_atoms_syntax().parse(example1);
+        dbg![create_atoms_syntax().parse(example1)];
     }
 
     #[test]
@@ -520,7 +568,7 @@ create_atoms 1 mesh funnel.stl meshmode bisect 4.0 units box radscale 0.9"
             .lines()
             .map(|l| l.split_whitespace().collect_vec());
         for example in examples {
-            create_atoms_syntax().parse(example);
+            dbg![create_atoms_syntax().parse(example)];
         }
     }
 }
