@@ -12,12 +12,14 @@ pub mod parse;
 pub(crate) struct CommandSyntax {
     command_name: &'static str,
     n_positional: u32, // TODO: Switch to Nargs later
+    positional_labels: Vec<PositionalArg>,
     /// Mutually exclusive keywords
     /// The style's arguments follow the rest of the positional arguments
     /// Which keyword gives the style is kept in the styles struct
     styles: Option<Styles>,
     // TODO: make this an array and generate at compile time
     kwargs: Vec<KeywordArg>,
+    has_trailing_positionals: bool,
 }
 
 pub(crate) struct CommandSyntaxBuilder {
@@ -30,20 +32,21 @@ pub(crate) struct CommandSyntaxBuilder {
     has_trailing_positionals: bool,
 }
 
-impl CommandSyntaxBuilder {
+impl CommandSyntax {
     pub(crate) fn new(command_name: &'static str) -> Self {
         Self {
             command_name,
-            positional_args: Vec::new(),
-            styles: Vec::default(),
-            style_pos: None,
+            positional_labels: Vec::default(),
+            styles: None,
             kwargs: Vec::new(),
             has_trailing_positionals: false,
+            n_positional: 0,
         }
     }
 
     pub(crate) fn add_positional(&mut self, argname: &'static str) {
-        self.positional_args.push(PositionalArg { name: argname })
+        self.positional_labels.push(PositionalArg { name: argname });
+        self.n_positional += 1;
     }
 
     pub(crate) fn add_keyword(&mut self, kwarg: KeywordArg) {
@@ -56,26 +59,25 @@ impl CommandSyntaxBuilder {
         }
     }
 
-    pub(crate) fn build(self) -> CommandSyntax {
-        CommandSyntax {
-            command_name: self.command_name,
-            n_positional: self.positional_args.len() as u32,
-            styles: self.style_pos.map(|pos| Styles {
-                style_position: pos,
-                styles: self.styles,
-            }),
-            kwargs: self.kwargs,
-        }
-    }
-
+    /// Add a style to the command.
+    ///
+    /// If a `<style>` positional has not yet been added, this will be appended to the list of
+    /// positonal args.
     pub(crate) fn add_style(&mut self, style: Style) {
-        if self.styles.is_empty() {
-            // If no style added yet, add a `style` pos-arg
-            self.add_positional("style");
-            self.style_pos = Some(self.positional_args.len() as u32);
-        }
+        let styles = match &mut self.styles {
+            Some(styles) => styles,
 
-        self.styles.push(style);
+            None => {
+                self.add_positional("style");
+                self.styles = Some(Styles {
+                    style_position: self.n_positional,
+                    styles: Vec::new(),
+                });
+                self.styles.as_mut().unwrap()
+            }
+        };
+
+        styles.styles.push(style);
     }
 }
 
@@ -147,7 +149,7 @@ struct Style {
     arg_names: Option<Vec<&'static str>>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 struct PositionalArg {
     name: &'static str,
 }
@@ -253,7 +255,7 @@ mod test {
     //           *lattice* = the geometry is defined in lattice units
     //           *box* = the geometry is defined in simulation box units
 
-    fn create_atoms_syntax() -> CommandSyntax {
+    fn create_atoms_syntax_manual() -> CommandSyntax {
         CommandSyntax {
             command_name: "create_atoms",
             n_positional: 2,
@@ -305,43 +307,47 @@ mod test {
                                        // variable args, like a style
                                        // this one is ok, because it takes only a fixed number.
             ],
+            positional_labels: vec![
+                PositionalArg { name: "type" },
+                PositionalArg { name: "style" },
+            ],
+            has_trailing_positionals: false,
         }
     }
 
-    #[test]
-    fn builder() {
-        let mut builder = CommandSyntaxBuilder::new("create_atoms");
-        builder.add_positional("type");
-        builder.add_style(Style {
+    fn create_atoms_syntax() -> CommandSyntax {
+        let mut syntax = CommandSyntax::new("create_atoms");
+        syntax.add_positional("type");
+        syntax.add_style(Style {
             name: "box",
             arg_count: 0,
             arg_names: None,
         });
-        builder.add_style(Style {
+        syntax.add_style(Style {
             name: "region",
             arg_count: 1,
             arg_names: Some(vec!["region-ID"]),
         });
 
-        builder.add_style(Style {
+        syntax.add_style(Style {
             name: "single",
             arg_count: 3,
             arg_names: Some(vec!["x", "y", "z"]),
         });
 
-        builder.add_style(Style {
+        syntax.add_style(Style {
             name: "mesh",
             arg_count: 1,
             arg_names: Some(vec!["STL-file"]),
         });
 
-        builder.add_style(Style {
+        syntax.add_style(Style {
             name: "random",
             arg_count: 3,
             arg_names: Some(vec!["N", "seed", "region-ID"]),
         });
 
-        builder.add_kwargs([
+        syntax.add_kwargs([
             kwarg!("mol", 2; "template-ID","seed"),
             kwarg!("basis", 2),
             kwarg!("ratio", 2),
@@ -358,10 +364,15 @@ mod test {
                                    // variable args, like a style
         ]);
 
-        pretty_assertions::assert_eq!(builder.build(), create_atoms_syntax());
+        syntax
     }
 
     use super::*;
+
+    #[test]
+    fn syntax_creation() {
+        pretty_assertions::assert_eq!(create_atoms_syntax(), create_atoms_syntax_manual())
+    }
 
     #[test]
     fn create_atoms_box() {
