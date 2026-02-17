@@ -8,6 +8,7 @@ use crate::{
 pub mod parse;
 
 /// A representation of the command/style's syntax
+#[derive(Debug, Default, PartialEq, Eq)]
 pub(crate) struct CommandSyntax {
     command_name: &'static str,
     n_positional: u32, // TODO: Switch to Nargs later
@@ -72,7 +73,7 @@ impl CommandSyntaxBuilder {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub(crate) struct KeywordArg {
     name: &'static str,
     nargs: Nargs,
@@ -105,6 +106,7 @@ impl KeywordArg {
 }
 
 // TODO: See how sub commands work? Maybe this will be similar
+#[derive(Debug, PartialEq, Eq)]
 struct Styles {
     /// Location of the 'style' argument among the positional args
     style_position: u32,
@@ -132,7 +134,7 @@ impl Default for Styles {
     }
 }
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
 struct Style {
     name: &'static str,
     arg_count: u32,
@@ -144,7 +146,7 @@ struct PositionalArg {
     name: &'static str,
 }
 
-#[derive(Default, Debug, Copy, Clone)]
+#[derive(Default, Debug, Copy, Clone, PartialEq, Eq)]
 pub(crate) enum Nargs {
     /// Exactly this many arguments.
     Int(u32),
