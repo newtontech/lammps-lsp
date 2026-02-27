@@ -5,30 +5,30 @@ fn create_atoms_syntax() -> CommandSyntax {
     syntax.add_positional("type");
     syntax.add_style(Style {
         name: "box",
-        arg_count: 0,
+        arg_count: 0.into(),
         arg_names: None,
     });
     syntax.add_style(Style {
         name: "region",
-        arg_count: 1,
+        arg_count: 1.into(),
         arg_names: Some(vec!["region-ID"]),
     });
 
     syntax.add_style(Style {
         name: "single",
-        arg_count: 3,
+        arg_count: 3.into(),
         arg_names: Some(vec!["x", "y", "z"]),
     });
 
     syntax.add_style(Style {
         name: "mesh",
-        arg_count: 1,
+        arg_count: 1.into(),
         arg_names: Some(vec!["STL-file"]),
     });
 
     syntax.add_style(Style {
         name: "random",
-        arg_count: 3,
+        arg_count: 3.into(),
         arg_names: Some(vec!["N", "seed", "region-ID"]),
     });
 
@@ -122,31 +122,14 @@ mod test {
             styles: Some(Styles {
                 style_position: 2,
                 styles: vec![
-                    Style {
-                        name: "box",
-                        arg_count: 0,
-                        arg_names: None,
-                    },
-                    Style {
-                        name: "region",
-                        arg_count: 1,
-                        arg_names: Some(vec!["region-ID"]),
-                    },
-                    Style {
-                        name: "single",
-                        arg_count: 3,
-                        arg_names: Some(vec!["x", "y", "z"]),
-                    },
-                    Style {
-                        name: "mesh",
-                        arg_count: 1,
-                        arg_names: Some(vec!["STL-file"]),
-                    },
-                    Style {
-                        name: "random",
-                        arg_count: 3,
-                        arg_names: Some(vec!["N", "seed", "region-ID"]),
-                    },
+                    Style::new("box"),
+                    Style::new("region").add_arg("region-ID"),
+                    Style::new("single").add_arg("x").add_arg("y").add_arg("z"),
+                    Style::new("mesh").add_arg("STL-file"),
+                    Style::new("random")
+                        .add_arg("N")
+                        .add_arg("seed")
+                        .add_arg("region-ID"),
                 ],
             }),
 

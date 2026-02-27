@@ -64,22 +64,25 @@ impl CommandSyntax {
             current += 1;
         }
 
-        let n_style_args = style.as_ref().map_or(0, |sty| sty.arg_count);
+        let n_style_args = style.as_ref().map_or(Nargs::None, |sty| sty.arg_count);
 
         println!("style: {:?}", style.as_ref().map_or("N/A", |sty| sty.name));
         println!("n_style_args: {:?}", n_style_args);
 
-        let mut style_args = Vec::with_capacity(n_style_args as usize);
+        let mut style_args = Vec::new(); // TODO: add capacity if fixed number
 
-        for i_pos in 0..n_style_args {
+        for i_pos in n_style_args.into_iter() {
             let Some(&word) = words.get(current) else {
                 panic!(
-                    "invalid syntax, expected {} arguments for style `{}`, only found {}",
+                    "invalid syntax, expected {:?} arguments for style `{}`, only found {}",
                     n_style_args,
                     style.as_ref().map_or("", |sty| sty.name),
                     i_pos
                 );
             };
+
+            todo!["break if a keyword is found"];
+
             println!("{}", word);
             style_args.push(word);
 

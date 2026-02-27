@@ -150,8 +150,30 @@ impl Default for Styles {
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 struct Style {
     name: &'static str,
-    arg_count: u32,
+    arg_count: Nargs,
     arg_names: Option<Vec<&'static str>>,
+}
+
+impl Style {
+    fn new(name: &'static str) -> Self {
+        Self {
+            name,
+            arg_count: Nargs::None,
+            arg_names: None,
+        }
+    }
+
+    fn add_arg(mut self, label: &'static str) -> Self {
+        let argnames = match &mut self.arg_names {
+            Some(argnames) => argnames,
+            None => {
+                self.arg_names = Some(Vec::new());
+                &mut self.arg_names.as_mut().unwrap()
+            }
+        };
+        argnames.push(label);
+        self
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
