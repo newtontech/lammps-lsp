@@ -103,9 +103,9 @@ impl KeywordArg {
                     n,
                     "missmatched number of positional args and labels"
                 ),
-                Nargs::Optional => todo!(),
-                Nargs::ZeroPlus => todo!(),
-                Nargs::OnePlus => todo!(),
+                Nargs::Optional => todo!("One label for all variables"),
+                Nargs::ZeroPlus => todo!("One Label for all variables"),
+                Nargs::OnePlus => todo!("One Label for all variables"),
                 Nargs::None => assert_eq!(labels.len(), 0),
             }
         }
@@ -163,6 +163,9 @@ impl Style {
         }
     }
 
+    /// Add a new argument with a given label:
+    ///
+    /// Adds to the arg count if Int or None
     fn add_arg(mut self, label: &'static str) -> Self {
         let argnames = match &mut self.arg_names {
             Some(argnames) => argnames,
@@ -172,6 +175,13 @@ impl Style {
             }
         };
         argnames.push(label);
+        match self.arg_count {
+            Nargs::Int(i) => {
+                self.arg_count = Nargs::Int(i + 1);
+            }
+            Nargs::None => self.arg_count = Nargs::Int(1),
+            _ => (),
+        }
         self
     }
 }

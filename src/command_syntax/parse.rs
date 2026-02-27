@@ -69,19 +69,29 @@ impl CommandSyntax {
         println!("style: {:?}", style.as_ref().map_or("N/A", |sty| sty.name));
         println!("n_style_args: {:?}", n_style_args);
 
-        let mut style_args = Vec::new(); // TODO: add capacity if fixed number
+        let should_break_on_kw = !n_style_args.is_fixed();
+
+        let mut style_args = Vec::with_capacity(n_style_args.min_args() as usize);
+
+        // FIXME: Break if current is greater than the number of total arguments
 
         for i_pos in n_style_args.into_iter() {
             let Some(&word) = words.get(current) else {
-                panic!(
-                    "invalid syntax, expected {:?} arguments for style `{}`, only found {}",
-                    n_style_args,
-                    style.as_ref().map_or("", |sty| sty.name),
-                    i_pos
-                );
+                if n_style_args.is_fixed() {
+                    panic!(
+                        "invalid syntax, expected {} arguments for style `{}`, only found {}",
+                        n_style_args.min_args(),
+                        style.as_ref().map_or("", |sty| sty.name),
+                        i_pos
+                    );
+                } else {
+                    break;
+                }
             };
 
-            todo!["break if a keyword is found"];
+            if should_break_on_kw && is_keyword_arg(word).is_some() {
+                break;
+            }
 
             println!("{}", word);
             style_args.push(word);

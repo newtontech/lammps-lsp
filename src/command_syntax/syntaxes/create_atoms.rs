@@ -1,11 +1,11 @@
-use crate::command_syntax::{kwarg, CommandSyntax, Style};
+use crate::command_syntax::{kwarg, CommandSyntax, Nargs, Style};
 
 fn create_atoms_syntax() -> CommandSyntax {
     let mut syntax = CommandSyntax::new("create_atoms");
     syntax.add_positional("type");
     syntax.add_style(Style {
         name: "box",
-        arg_count: 0.into(),
+        arg_count: Nargs::None,
         arg_names: None,
     });
     syntax.add_style(Style {
