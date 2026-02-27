@@ -66,7 +66,7 @@ impl CommandSyntax {
     ///
     /// If a `<style>` positional has not yet been added, this will be appended to the list of
     /// positonal args.
-    pub(crate) fn add_style(&mut self, style: Style) {
+    pub(crate) fn add_style(&mut self, style: Style) -> &mut Self {
         let styles = match &mut self.styles {
             Some(styles) => styles,
 
@@ -81,6 +81,8 @@ impl CommandSyntax {
         };
 
         styles.styles.push(style);
+
+        self
     }
 }
 
