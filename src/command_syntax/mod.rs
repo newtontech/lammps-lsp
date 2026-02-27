@@ -199,6 +199,88 @@ pub(crate) enum Nargs {
     None,
 }
 
+impl From<u32> for Nargs {
+    fn from(v: u32) -> Self {
+        Self::Int(v)
+    }
+}
+
+impl Nargs {
+    pub(crate) fn is_fixed(&self) -> bool {
+        match self {
+            Nargs::Int(_) | Nargs::None => true,
+            Nargs::Optional | Nargs::ZeroPlus | Nargs::OnePlus => false,
+        }
+    }
+    pub(crate) const fn max_args(&self) -> Option<u32> {
+        match self {
+            Nargs::Int(i) => Some(*i),
+            Nargs::None => Some(0),
+            Nargs::Optional => Some(1),
+            Nargs::ZeroPlus => None,
+            Nargs::OnePlus => None,
+        }
+    }
+
+    pub(crate) const fn min_args(&self) -> u32 {
+        match self {
+            Nargs::Int(i) => *i,
+            Nargs::None => 0,
+            Nargs::Optional => 0,
+            Nargs::ZeroPlus => 0,
+            Nargs::OnePlus => 1,
+        }
+    }
+}
+
+pub struct NargsIter {
+    nargs: Nargs,
+    current: u32,
+}
+
+impl Iterator for NargsIter {
+    type Item = u32;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.nargs == Nargs::None {
+            return None;
+        }
+
+        let old = self.current;
+        self.current += 1;
+
+        let Some(n_max) = self.nargs.max_args() else {
+            return Some(old); // These are infinite iterators
+        };
+
+        if self.current > n_max {
+            return None;
+        }
+
+        Some(old)
+    }
+
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        (
+            self.nargs.min_args() as usize,
+            self.nargs.max_args().map(|n| n as usize),
+        )
+    }
+}
+
+impl IntoIterator for Nargs {
+    type Item = u32;
+
+    type IntoIter = NargsIter;
+
+    fn into_iter(self) -> Self::IntoIter {
+        Self::IntoIter {
+            current: 0,
+            nargs: self,
+        }
+    }
+}
+
 /// This macro is an abosolutely atrocious and un-necessary use and abuse of them
 // TODO: is there a way to just add the hints and figure the counts out from them?
 macro_rules! kwarg {
@@ -219,3 +301,51 @@ macro_rules! kwarg {
 }
 
 pub(crate) use kwarg;
+
+#[cfg(test)]
+mod test {
+    use super::Nargs;
+
+    #[test]
+    fn nargs_fixed_iter() {
+        let mut iter = Nargs::Int(3).into_iter();
+
+        assert_eq!(iter.next(), Some(0));
+        assert_eq!(iter.next(), Some(1));
+        assert_eq!(iter.next(), Some(2));
+        assert_eq!(iter.next(), None);
+    }
+
+    #[test]
+    fn nargs_optional_iter() {
+        let mut iter = Nargs::Optional.into_iter();
+
+        // Has at most 1 argument
+        assert_eq!(iter.next(), Some(0));
+        assert_eq!(iter.next(), None);
+    }
+
+    #[test]
+    fn nargs_zero_plus_iter() {
+        let mut iter = Nargs::ZeroPlus.into_iter();
+
+        // Has infinite number of args
+
+        for i in 0..1000 {
+            assert_eq!(iter.next(), Some(i));
+        }
+        // And so on
+    }
+
+    #[test]
+    fn nargs_one_plus_iter() {
+        let mut iter = Nargs::ZeroPlus.into_iter();
+
+        // Has infinite number of args
+
+        for i in 0..1000 {
+            assert_eq!(iter.next(), Some(i));
+        }
+        // And so on
+    }
+}
