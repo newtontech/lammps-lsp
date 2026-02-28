@@ -1,0 +1,15 @@
+---
+source: src/command_syntax/syntaxes/thermo_style.rs
+expression: "syntax().parse(vec![\"thermo_style\", \"one\"])"
+---
+ParseResult {
+    command_name: "thermo_style",
+    positional: [
+        "one",
+    ],
+    style: Some(
+        "one",
+    ),
+    style_args: [],
+    kwargs: [],
+}

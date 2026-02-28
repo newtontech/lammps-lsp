@@ -1,0 +1,17 @@
+---
+source: src/command_syntax/syntaxes/thermo_style.rs
+expression: "syntax().parse(vec![\"thermo_style\", \"custom\", \"step\"])"
+---
+ParseResult {
+    command_name: "thermo_style",
+    positional: [
+        "custom",
+    ],
+    style: Some(
+        "custom",
+    ),
+    style_args: [
+        "step",
+    ],
+    kwargs: [],
+}
