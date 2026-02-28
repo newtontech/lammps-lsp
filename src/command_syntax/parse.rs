@@ -33,7 +33,12 @@ impl CommandSyntax {
             ReadTrailing,   // Read args until a keyword is found
         }
 
-        assert!(words[0] == self.command_name, "Wrong command name");
+        assert!(
+            words[0] == self.command_name,
+            "Wrong command name: got {}, expected {}",
+            words[0],
+            self.command_name
+        );
         println!("{}", self.command_name);
         let mut current = 1;
 
