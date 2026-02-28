@@ -7,7 +7,52 @@ fn syntax() -> CommandSyntax {
         .add_style(Style::new("one"))
         .add_style(Style::new("multi"))
         .add_style(Style::new("yaml"))
-        .add_style(Style::new("custom").add_arg("args"));
+        .add_style(Style::new("custom").add_var_arg("args"));
 
     syntax
+}
+
+#[cfg(test)]
+mod test {
+    use insta::assert_debug_snapshot;
+
+    use super::syntax;
+
+    #[test]
+    fn one() {
+        assert_debug_snapshot!(syntax().parse(vec!["thermo_style", "one"]));
+    }
+
+    #[test]
+    fn multi() {
+        assert_debug_snapshot!(syntax().parse(vec!["thermo_style", "multi"]));
+    }
+
+    #[test]
+    fn yaml() {
+        assert_debug_snapshot!(syntax().parse(vec!["thermo_style", "yaml"]));
+    }
+
+    #[test]
+    fn custom_none() {
+        assert_debug_snapshot!(syntax().parse(vec!["thermo_style", "custom"]));
+    }
+
+    #[test]
+    fn custom_one() {
+        assert_debug_snapshot!(syntax().parse(vec!["thermo_style", "custom", "step"]));
+    }
+
+    #[test]
+    fn custom_five() {
+        assert_debug_snapshot!(syntax().parse(vec![
+            "thermo_style",
+            "custom",
+            "step",
+            "temp",
+            "press",
+            "epair",
+            "ecoul"
+        ]));
+    }
 }
