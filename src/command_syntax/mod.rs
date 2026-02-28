@@ -184,6 +184,15 @@ impl Style {
         }
         self
     }
+
+    /// Add an argument that can support more than one values.
+    fn add_var_arg(mut self, label: &'static str) -> Self {
+        // FIXME: add support for styles with both number of positional args and some trailing.
+        self.arg_names.get_or_insert_default().push(label);
+        // FIXME: Only do so if there is no positional already set?
+        self.arg_count = Nargs::OnePlus;
+        self
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
