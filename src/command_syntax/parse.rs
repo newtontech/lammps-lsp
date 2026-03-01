@@ -22,8 +22,6 @@ impl CommandSyntax {
     pub(crate) fn parse<'a>(&self, words: Vec<&'a str>) -> ParseResult<'a> {
         // TODO: have alternate between modes reading Nargs args and reading keywords?
 
-        println!("----------");
-
         /// Some sort of statemachine the parsing is currently in
         enum Mode {
             /// Next word is expected to be a keyword
@@ -39,7 +37,6 @@ impl CommandSyntax {
             words[0],
             self.command_name
         );
-        println!("{}", self.command_name);
         let mut current = 1;
 
         // Skip ahead and find the style
@@ -58,7 +55,6 @@ impl CommandSyntax {
 
         for i_pos in 0..self.n_positional {
             if let Some(&word) = words.get(current) {
-                println!("{word}");
                 positionals.push(word);
             } else {
                 panic!(
@@ -70,9 +66,6 @@ impl CommandSyntax {
         }
 
         let n_style_args = style.as_ref().map_or(Nargs::None, |sty| sty.arg_count);
-
-        println!("style: {:?}", style.as_ref().map_or("N/A", |sty| sty.name));
-        println!("n_style_args: {:?}", n_style_args);
 
         let should_break_on_kw = !n_style_args.is_fixed();
 
@@ -98,7 +91,6 @@ impl CommandSyntax {
                 break;
             }
 
-            println!("{}", word);
             style_args.push(word);
 
             current += 1;
@@ -113,7 +105,6 @@ impl CommandSyntax {
             if let Some(kwarg) = is_keyword_arg(word) {
                 // TODO: advance by the appropriate number of args...
                 // Might not work unless the number of keywords is known
-                println!("{}:", kwarg.name);
                 let args = self.read_arguments(kwarg.nargs, &mut args_iter);
 
                 kwargs.push(Kwarg {
@@ -126,8 +117,6 @@ impl CommandSyntax {
                 panic!("Invalid keyword `{word}` or unexpected trailing positional argument")
             }
         }
-
-        println!("----------");
 
         ParseResult {
             command_name: self.command_name,
@@ -160,20 +149,14 @@ impl CommandSyntax {
         nargs: Nargs,
         iter: &mut impl Iterator<Item = &'a str>,
     ) -> Vec<&'a str> {
-        /// TODO: Return something more useful than just panicking on error!!!
+        // TODO: Return something more useful than just panicking on error!!!
         let nargs = match nargs {
             Nargs::Int(n) => n,
             Nargs::None => 0,
             x => unimplemented!("{:?}", x),
         };
 
-        let found_args = iter
-            .take(nargs as usize)
-            .map(|w| {
-                println!("{w}");
-                w
-            })
-            .collect_vec();
+        let found_args = iter.take(nargs as usize).collect_vec();
 
         if (found_args.len() as u32) < nargs {
             panic!("expected {} found {} args", nargs, found_args.len());
