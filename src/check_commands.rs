@@ -4,6 +4,7 @@ use thiserror::Error;
 
 use crate::{
     ast::{Ast, Command},
+    command_syntax,
     commands::CommandName,
     diagnostics::{self, Diagnostic, Issue},
     spans::Span,
@@ -23,13 +24,11 @@ pub enum InvalidCommand {
     #[error("unknown command: `{0}`")]
     UnknownCommand(String, Span),
     #[error("{0}")]
-    InvalidArguments(InvalidArguments),
-}
+    InvalidArguments(#[from] InvalidArguments),
 
-impl From<InvalidArguments> for InvalidCommand {
-    fn from(v: InvalidArguments) -> Self {
-        Self::InvalidArguments(v)
-    }
+    // TODO: Consider merging with the above
+    #[error(transparent)]
+    SyntaxError(#[from] command_syntax::parse::ParseError),
 }
 
 impl Issue for InvalidCommand {
@@ -37,6 +36,7 @@ impl Issue for InvalidCommand {
         let span = match self {
             Self::UnknownCommand(_, span) => *span,
             Self::InvalidArguments(invalid_args) => invalid_args.range,
+            Self::SyntaxError(err) => err.span,
         };
         Diagnostic {
             name: "invalid command",
@@ -68,6 +68,10 @@ impl Ast {
                         },
                     ))
                 } else {
+                    // ignore the actual result, just care about the error.
+                    command_syntax::syntaxes::syntax(command.name.as_str())?
+                        .parse(command)
+                        .err();
                     None
                 }
             }
