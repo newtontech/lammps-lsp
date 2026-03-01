@@ -20,12 +20,12 @@ mod test {
     #[test]
     fn lmp_examples() {
         let x = "boundary p p f".split_whitespace().collect_vec();
-        insta::assert_debug_snapshot!(super::syntax().parse(x));
+        insta::assert_debug_snapshot!(super::syntax().parse(x).expect("Should parse"));
 
         let x = "boundary p fs p".split_whitespace().collect_vec();
-        insta::assert_debug_snapshot!(super::syntax().parse(x));
+        insta::assert_debug_snapshot!(super::syntax().parse(x).expect("Should parse"));
 
         let x = "boundary s f fm".split_whitespace().collect_vec();
-        insta::assert_debug_snapshot!(super::syntax().parse(x));
+        insta::assert_debug_snapshot!(super::syntax().parse(x).expect("Should parse"));
     }
 }

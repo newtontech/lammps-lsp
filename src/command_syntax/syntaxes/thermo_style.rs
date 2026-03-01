@@ -20,39 +20,43 @@ mod test {
 
     #[test]
     fn one() {
-        assert_debug_snapshot!(syntax().parse(vec!["thermo_style", "one"]));
+        assert_debug_snapshot!(syntax().parse(vec!["thermo_style", "one"]).unwrap());
     }
 
     #[test]
     fn multi() {
-        assert_debug_snapshot!(syntax().parse(vec!["thermo_style", "multi"]));
+        assert_debug_snapshot!(syntax().parse(vec!["thermo_style", "multi"]).unwrap());
     }
 
     #[test]
     fn yaml() {
-        assert_debug_snapshot!(syntax().parse(vec!["thermo_style", "yaml"]));
+        assert_debug_snapshot!(syntax().parse(vec!["thermo_style", "yaml"]).unwrap());
     }
 
     #[test]
     fn custom_none() {
-        assert_debug_snapshot!(syntax().parse(vec!["thermo_style", "custom"]));
+        assert_debug_snapshot!(syntax().parse(vec!["thermo_style", "custom"]).unwrap());
     }
 
     #[test]
     fn custom_one() {
-        assert_debug_snapshot!(syntax().parse(vec!["thermo_style", "custom", "step"]));
+        assert_debug_snapshot!(syntax()
+            .parse(vec!["thermo_style", "custom", "step"])
+            .unwrap());
     }
 
     #[test]
     fn custom_five() {
-        assert_debug_snapshot!(syntax().parse(vec![
-            "thermo_style",
-            "custom",
-            "step",
-            "temp",
-            "press",
-            "epair",
-            "ecoul"
-        ]));
+        assert_debug_snapshot!(syntax()
+            .parse(vec![
+                "thermo_style",
+                "custom",
+                "step",
+                "temp",
+                "press",
+                "epair",
+                "ecoul"
+            ])
+            .unwrap());
     }
 }

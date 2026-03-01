@@ -170,16 +170,16 @@ mod test {
     #[test]
     fn create_atoms_box() {
         let example1 = "create_atoms 1 box".split_whitespace().collect_vec();
-        create_atoms_syntax().parse(example1);
+        create_atoms_syntax().parse(example1).expect("should parse");
     }
 
     #[test]
-    #[should_panic = "Invalid keyword `extra_arg` or unexpected trailing positional argument"]
+    #[should_panic = "invalid create_atoms command: invalid keyword extra_arg, valid keywords: mol, basis, ratio, subset, remap, var, set, radscale, rotate, overlap, maxtry, units, meshmode"]
     fn create_atoms_box_bad() {
         let example1 = "create_atoms 1 box extra_arg"
             .split_whitespace()
             .collect_vec();
-        dbg![create_atoms_syntax().parse(example1)];
+        panic!["{}", create_atoms_syntax().parse(example1).unwrap_err()];
     }
 
     #[test]
@@ -187,14 +187,14 @@ mod test {
         let example1 = "create_atoms 2 region mybox"
             .split_whitespace()
             .collect_vec();
-        dbg![create_atoms_syntax().parse(example1)];
+        dbg![create_atoms_syntax().parse(example1).expect("should parse")];
     }
 
     #[test]
-    #[should_panic = "invalid syntax, expected 1 arguments for style `region`, only found 0"]
+    #[should_panic = "invalid create_atoms command: for style region, expected 1 positional arguments, found 0"]
     fn create_atoms_region_bad() {
         let example1 = "create_atoms 2 region".split_whitespace().collect_vec();
-        dbg![create_atoms_syntax().parse(example1)];
+        panic!["{}", create_atoms_syntax().parse(example1).unwrap_err()];
     }
 
     #[test]
@@ -202,7 +202,7 @@ mod test {
         let example1 = "create_atoms 2 region mybox basis 2 3"
             .split_whitespace()
             .collect_vec();
-        dbg![create_atoms_syntax().parse(example1)];
+        dbg![create_atoms_syntax().parse(example1).expect("should parse")];
     }
 
     #[test]
@@ -218,7 +218,7 @@ create_atoms 1 mesh funnel.stl meshmode bisect 4.0 units box radscale 0.9"
             .lines()
             .map(|l| l.split_whitespace().collect_vec());
         for example in examples {
-            dbg![create_atoms_syntax().parse(example)];
+            dbg![create_atoms_syntax().parse(example).expect("should parse")];
         }
     }
 }
