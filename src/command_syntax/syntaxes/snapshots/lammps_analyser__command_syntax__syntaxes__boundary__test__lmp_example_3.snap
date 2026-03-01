@@ -1,0 +1,57 @@
+---
+source: src/command_syntax/syntaxes/boundary.rs
+expression: "super::syntax().parse(&x).expect(\"Should parse\")"
+---
+ParseResult {
+    command_name: "boundary",
+    positionals: [
+        Argument {
+            kind: Word(
+                "s",
+            ),
+            span: Span {
+                start: Point {
+                    row: 0,
+                    column: 9,
+                },
+                end: Point {
+                    row: 0,
+                    column: 10,
+                },
+            },
+        },
+        Argument {
+            kind: Word(
+                "f",
+            ),
+            span: Span {
+                start: Point {
+                    row: 0,
+                    column: 11,
+                },
+                end: Point {
+                    row: 0,
+                    column: 12,
+                },
+            },
+        },
+        Argument {
+            kind: Word(
+                "fm",
+            ),
+            span: Span {
+                start: Point {
+                    row: 0,
+                    column: 13,
+                },
+                end: Point {
+                    row: 0,
+                    column: 15,
+                },
+            },
+        },
+    ],
+    style: None,
+    style_args: [],
+    kwargs: [],
+}
