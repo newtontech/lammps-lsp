@@ -1,6 +1,6 @@
 use crate::command_syntax::{CommandSyntax, Style};
 
-fn syntax() -> CommandSyntax {
+pub(crate) fn syntax() -> CommandSyntax {
     let mut syntax = CommandSyntax::new("thermo_style");
 
     syntax
