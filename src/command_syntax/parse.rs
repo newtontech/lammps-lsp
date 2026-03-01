@@ -2,7 +2,10 @@ use super::{CommandSyntax, KeywordArg, Nargs, Style};
 use itertools::Itertools;
 use thiserror::Error;
 
-use crate::ast::{Argument, GenericCommand};
+use crate::{
+    ast::{Argument, GenericCommand},
+    spans::{Point, Span},
+};
 
 #[derive(Debug)]
 pub(crate) struct Kwarg<'a> {
@@ -19,15 +22,15 @@ pub(crate) struct ParseResult<'a> {
     kwargs: Vec<Kwarg<'a>>,
 }
 
-#[derive(Debug, Error)]
+#[derive(Debug, Error, Clone, PartialEq, Eq)]
 #[error("invalid {command_name} command: {kind}")]
 pub(crate) struct ParseError {
-    kind: ParseErrorKind,
-    command_name: &'static str,
-    // TODO: span
+    pub(crate) kind: ParseErrorKind,
+    pub(crate) command_name: &'static str,
+    pub(crate) span: Span,
 }
 
-#[derive(Debug, Error)]
+#[derive(Debug, Error, Clone, PartialEq, Eq)]
 pub(crate) enum ParseErrorKind {
     #[error("expected {expected} positional arguments, found {found}")]
     InvalidPositionals { expected: u32, found: u32 },
@@ -103,7 +106,13 @@ impl CommandSyntax {
             if let Some(word) = args.get(current) {
                 positionals.push(word);
             } else {
-                return Err(self.positional_err(current as u32));
+                return Err(self.positional_err(
+                    current as u32,
+                    args.last()
+                        .expect("Iteration should never occur if no positionals exist")
+                        .span
+                        .end,
+                ));
             }
             current += 1;
         }
@@ -122,6 +131,8 @@ impl CommandSyntax {
                     return Err(self.style_positional_err(
                         style.expect("Unreachable unless a style is defined"),
                         i_pos,
+                        args[current - 1].span.end, // Locate error at the end of the previously
+                                                    // parsed arg
                     ));
                 } else {
                     break;
@@ -146,7 +157,9 @@ impl CommandSyntax {
             if let Some(kwarg) = is_keyword_arg(word) {
                 // TODO: advance by the appropriate number of args...
                 // Might not work unless the number of keywords is known
-                let args = self.read_arguments_for_keyword(kwarg, &mut args_iter)?;
+                let args = self
+                    .read_arguments_for_keyword(kwarg, &mut args_iter)
+                    .map_err(|e| e.with_command(self.command_name, word.span))?;
 
                 kwargs.push(Kwarg {
                     name: kwarg.name,
@@ -218,7 +231,7 @@ impl CommandSyntax {
         &self,
         keyword: &KeywordArg,
         iter: &mut impl Iterator<Item = &'a Argument>,
-    ) -> Result<Vec<&'a Argument>, ParseError> {
+    ) -> Result<Vec<&'a Argument>, ParseErrorKind> {
         self.read_arguments(keyword.nargs, iter).map_err(|n_found| {
             ParseErrorKind::KeywordArguments {
                 found: n_found,
@@ -226,18 +239,17 @@ impl CommandSyntax {
                 expected: keyword.nargs.min_args(),
                 kwarg: keyword.name,
             }
-            .with_command(self.command_name)
         })
     }
 }
 
 impl CommandSyntax {
-    fn positional_err(&self, found: u32) -> ParseError {
+    fn positional_err(&self, found: u32, last_pos: Point) -> ParseError {
         ParseErrorKind::InvalidPositionals {
             expected: self.n_positional,
             found,
         }
-        .with_command(self.command_name)
+        .with_command(self.command_name, last_pos.into())
     }
 
     fn invalid_keyword_err(&self, found: &Argument) -> ParseError {
@@ -245,7 +257,7 @@ impl CommandSyntax {
             found: found.to_string(),
             valid: self.kwargs.iter().map(|k| k.name).join(", "),
         }
-        .with_command(self.command_name)
+        .with_command(self.command_name, found.span)
     }
 
     fn invalid_style_err(&self, found: &Argument) -> ParseError {
@@ -260,25 +272,26 @@ impl CommandSyntax {
                 .map(|k| k.name)
                 .join(", "),
         }
-        .with_command(self.command_name)
+        .with_command(self.command_name, found.span)
     }
 
-    fn style_positional_err(&self, style: Style, found: u32) -> ParseError {
+    fn style_positional_err(&self, style: Style, found: u32, last_pos: Point) -> ParseError {
         ParseErrorKind::InvalidStyleArgs {
             style: style.name,
             expected: style.arg_count.min_args(),
             found,
         }
-        .with_command(self.command_name)
+        .with_command(self.command_name, last_pos.into())
     }
 }
 
 impl ParseErrorKind {
     /// Create a full error for this error kind.
-    fn with_command(self, command_name: &'static str) -> ParseError {
+    fn with_command(self, command_name: &'static str, span: Span) -> ParseError {
         ParseError {
             kind: self,
             command_name,
+            span,
         }
     }
 }
