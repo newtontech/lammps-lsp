@@ -34,19 +34,19 @@ pub(crate) struct ParseError {
 pub(crate) enum ParseErrorKind {
     #[error("expected {expected} positional arguments, found {found}")]
     InvalidPositionals { expected: u32, found: u32 },
-    #[error("for style {style}, expected {expected} positional arguments, found {found}")]
+    #[error("for style `{style}`, expected {expected} positional arguments, found {found}")]
     InvalidStyleArgs {
         style: &'static str,
         expected: u32,
         found: u32,
     },
-    #[error("invalid keyword {found}, valid keywords: {valid}")]
+    #[error("invalid keyword `{found}`, valid keywords: {valid}")]
     InvalidKeyword { found: String, valid: String },
 
-    #[error("invalid style {found}, valid styles:{valid} ")]
+    #[error("invalid style `{found}`, valid styles: {valid}")]
     InvalidStyle { found: String, valid: String },
 
-    #[error("for keyword {kwarg}, expected{expected}, found {found}, ")]
+    #[error("for keyword `{kwarg}`, expected{expected}, found {found}, ")]
     KeywordArguments {
         found: u32,
         expected: u32,
@@ -256,7 +256,11 @@ impl CommandSyntax {
     fn invalid_keyword_err(&self, found: &Argument) -> ParseError {
         ParseErrorKind::InvalidKeyword {
             found: found.to_string(),
-            valid: self.kwargs.iter().map(|k| k.name).join(", "),
+            valid: self
+                .kwargs
+                .iter()
+                .map(|k| format!["`{}`", k.name])
+                .join(", "),
         }
         .with_command(self.command_name, found.span)
     }
@@ -270,7 +274,7 @@ impl CommandSyntax {
                 .expect("Must have styles")
                 .styles
                 .iter()
-                .map(|k| k.name)
+                .map(|s| format!["`{}`", s.name])
                 .join(", "),
         }
         .with_command(self.command_name, found.span)
