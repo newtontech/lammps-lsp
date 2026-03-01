@@ -64,6 +64,8 @@ impl CommandSyntax {
 
         let GenericCommand { name, args, .. } = command;
 
+        let fallback_span = name.span;
+
         /// Some sort of statemachine the parsing is currently in
         enum Mode {
             /// Next word is expected to be a keyword
@@ -80,16 +82,6 @@ impl CommandSyntax {
             self.command_name
         );
         let mut current = 0;
-
-        // Skip ahead and find the style
-        // TODO: Could do instead when reading the rest of the args.
-        // FIXME: there will be an of by one error, because the command is no longer part of the
-        // args
-        let style = if self.styles.is_some() {
-            Some(self.determine_style(&args)?)
-        } else {
-            None
-        };
 
         // Dumb O(N) because there should only be a handful of keywords
         let is_keyword_arg = move |word: &Argument| {
@@ -108,14 +100,21 @@ impl CommandSyntax {
             } else {
                 return Err(self.positional_err(
                     current as u32,
-                    args.last()
-                        .expect("Iteration should never occur if no positionals exist")
-                        .span
-                        .end,
+                    args.last().map_or(fallback_span, |arg| arg.span).end,
                 ));
             }
             current += 1;
         }
+
+        // Skip ahead and find the style
+        // TODO: Could do instead when reading the rest of the args.
+        // FIXME: there will be an of by one error, because the command is no longer part of the
+        // args
+        let style = if self.styles.is_some() {
+            Some(self.determine_style(args)?)
+        } else {
+            None
+        };
 
         let n_style_args = style.as_ref().map_or(Nargs::None, |sty| sty.arg_count);
 
@@ -193,7 +192,9 @@ impl CommandSyntax {
         // HACK: minus one accounts for the command name not being part of the arguments list
         let style_pos = styles.style_position - 1;
 
-        let found_style = &words[style_pos as usize];
+        let found_style = &words
+            .get(style_pos as usize)
+            .expect("Should not be called until after parsing of positionals.");
 
         let Some(style) = styles
             .styles
