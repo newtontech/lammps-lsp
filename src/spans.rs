@@ -89,6 +89,18 @@ impl From<(Point, Point)> for Span {
     }
 }
 
+impl From<Point> for Span {
+    fn from(point: Point) -> Self {
+        Self {
+            start: point,
+            end: Point {
+                row: point.row,
+                column: point.column + 1,
+            },
+        }
+    }
+}
+
 impl<P> From<std::ops::Range<P>> for Span
 where
     P: Into<Point>,
