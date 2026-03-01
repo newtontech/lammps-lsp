@@ -33,13 +33,13 @@ mod test {
 
     #[test]
     fn lmp_examples() {
-        let x = command_helper("boundary p p f");
+        let x = command_helper("boundary p p f\n");
         insta::assert_debug_snapshot!(super::syntax().parse(&x).expect("Should parse"));
 
-        let x = command_helper("boundary p fs p");
+        let x = command_helper("boundary p fs p\n");
         insta::assert_debug_snapshot!(super::syntax().parse(&x).expect("Should parse"));
 
-        let x = command_helper("boundary s f fm");
+        let x = command_helper("boundary s f fm\n");
         insta::assert_debug_snapshot!(super::syntax().parse(&x).expect("Should parse"));
     }
 }

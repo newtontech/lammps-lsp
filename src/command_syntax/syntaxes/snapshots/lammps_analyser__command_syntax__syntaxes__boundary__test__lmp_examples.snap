@@ -1,13 +1,55 @@
 ---
 source: src/command_syntax/syntaxes/boundary.rs
-expression: "super::syntax().parse(x)"
+expression: "super::syntax().parse(&x).expect(\"Should parse\")"
 ---
 ParseResult {
     command_name: "boundary",
-    positional: [
-        "p",
-        "p",
-        "f",
+    positionals: [
+        Argument {
+            kind: Word(
+                "p",
+            ),
+            span: Span {
+                start: Point {
+                    row: 0,
+                    column: 9,
+                },
+                end: Point {
+                    row: 0,
+                    column: 10,
+                },
+            },
+        },
+        Argument {
+            kind: Word(
+                "p",
+            ),
+            span: Span {
+                start: Point {
+                    row: 0,
+                    column: 11,
+                },
+                end: Point {
+                    row: 0,
+                    column: 12,
+                },
+            },
+        },
+        Argument {
+            kind: Word(
+                "f",
+            ),
+            span: Span {
+                start: Point {
+                    row: 0,
+                    column: 13,
+                },
+                end: Point {
+                    row: 0,
+                    column: 14,
+                },
+            },
+        },
     ],
     style: None,
     style_args: [],
