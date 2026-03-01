@@ -158,9 +158,26 @@ mod test {
         }
     }
 
-    use crate::command_syntax::{PositionalArg, Styles};
+    use crate::{
+        ast::{from_node::FromNode, ts_to_ast, GenericCommand},
+        command_syntax::{PositionalArg, Styles},
+    };
 
     use super::*;
+
+    fn command_helper(text: &str) -> GenericCommand {
+        use crate::utils::parsing::setup_parser;
+
+        let mut ast = ts_to_ast(
+            &setup_parser().parse(text, None).expect("TS Parser Failed"),
+            text,
+        )
+        .expect("failed to parse");
+
+        std::mem::take(&mut ast.commands[0])
+            .try_into_generic()
+            .expect("failed to parse as GenericCommand")
+    }
 
     #[test]
     fn syntax_creation() {
@@ -169,40 +186,40 @@ mod test {
 
     #[test]
     fn create_atoms_box() {
-        let example1 = "create_atoms 1 box".split_whitespace().collect_vec();
-        create_atoms_syntax().parse(example1).expect("should parse");
+        let example1 = command_helper("create_atoms 1 box");
+        create_atoms_syntax()
+            .parse(&example1)
+            .expect("should parse");
     }
 
     #[test]
     #[should_panic = "invalid create_atoms command: invalid keyword extra_arg, valid keywords: mol, basis, ratio, subset, remap, var, set, radscale, rotate, overlap, maxtry, units, meshmode"]
     fn create_atoms_box_bad() {
-        let example1 = "create_atoms 1 box extra_arg"
-            .split_whitespace()
-            .collect_vec();
-        panic!["{}", create_atoms_syntax().parse(example1).unwrap_err()];
+        let example1 = command_helper("create_atoms 1 box extra_arg");
+        panic!["{}", create_atoms_syntax().parse(&example1).unwrap_err()];
     }
 
     #[test]
     fn create_atoms_region() {
-        let example1 = "create_atoms 2 region mybox"
-            .split_whitespace()
-            .collect_vec();
-        dbg![create_atoms_syntax().parse(example1).expect("should parse")];
+        let example1 = command_helper("create_atoms 2 region mybox");
+        dbg![create_atoms_syntax()
+            .parse(&example1)
+            .expect("should parse")];
     }
 
     #[test]
     #[should_panic = "invalid create_atoms command: for style region, expected 1 positional arguments, found 0"]
     fn create_atoms_region_bad() {
-        let example1 = "create_atoms 2 region".split_whitespace().collect_vec();
-        panic!["{}", create_atoms_syntax().parse(example1).unwrap_err()];
+        let example1 = command_helper("create_atoms 2 region");
+        panic!["{}", create_atoms_syntax().parse(&example1).unwrap_err()];
     }
 
     #[test]
     fn create_atoms_region_kwarg() {
-        let example1 = "create_atoms 2 region mybox basis 2 3"
-            .split_whitespace()
-            .collect_vec();
-        dbg![create_atoms_syntax().parse(example1).expect("should parse")];
+        let example1 = command_helper("create_atoms 2 region mybox basis 2 3");
+        dbg![create_atoms_syntax()
+            .parse(&example1)
+            .expect("should parse")];
     }
 
     #[test]
@@ -216,9 +233,9 @@ create_atoms 2 random 50 12345 NULL overlap 2.0 maxtry 50
 create_atoms 1 mesh open_box.stl meshmode qrand 0.1 units box
 create_atoms 1 mesh funnel.stl meshmode bisect 4.0 units box radscale 0.9"
             .lines()
-            .map(|l| l.split_whitespace().collect_vec());
+            .map(command_helper);
         for example in examples {
-            dbg![create_atoms_syntax().parse(example).expect("should parse")];
+            dbg![create_atoms_syntax().parse(&example).expect("should parse")];
         }
     }
 }

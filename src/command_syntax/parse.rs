@@ -2,18 +2,20 @@ use super::{CommandSyntax, KeywordArg, Nargs, Style};
 use itertools::Itertools;
 use thiserror::Error;
 
+use crate::ast::{Argument, GenericCommand};
+
 #[derive(Debug)]
 pub(crate) struct Kwarg<'a> {
     name: &'static str,
-    args: Vec<&'a str>,
+    args: Vec<&'a Argument>,
 }
 
 #[derive(Debug)]
 pub(crate) struct ParseResult<'a> {
     command_name: &'static str,
-    positional: Vec<&'a str>,
+    positionals: Vec<&'a Argument>,
     style: Option<&'a str>,
-    style_args: Vec<&'a str>,
+    style_args: Vec<&'a Argument>,
     kwargs: Vec<Kwarg<'a>>,
 }
 
@@ -51,8 +53,13 @@ pub(crate) enum ParseErrorKind {
 
 impl CommandSyntax {
     /// NOTE: As an initial Proof of Concept, just working on strings...
-    pub(crate) fn parse<'a>(&self, words: Vec<&'a str>) -> Result<ParseResult<'a>, ParseError> {
+    pub(crate) fn parse<'a>(
+        &self,
+        command: &'a GenericCommand,
+    ) -> Result<ParseResult<'a>, ParseError> {
         // TODO: have alternate between modes reading Nargs args and reading keywords?
+
+        let GenericCommand { name, args, .. } = command;
 
         /// Some sort of statemachine the parsing is currently in
         enum Mode {
@@ -64,32 +71,36 @@ impl CommandSyntax {
         }
 
         assert!(
-            words[0] == self.command_name,
+            name == self.command_name,
             "Wrong command name: got {}, expected {}",
-            words[0],
+            name,
             self.command_name
         );
-        let mut current = 1;
+        let mut current = 0;
 
         // Skip ahead and find the style
         // TODO: Could do instead when reading the rest of the args.
+        // FIXME: there will be an of by one error, because the command is no longer part of the
+        // args
         let style = if self.styles.is_some() {
-            Some(self.determine_style(&words)?)
+            Some(self.determine_style(&args)?)
         } else {
             None
         };
 
         // Dumb O(N) because there should only be a handful of keywords
-        let is_keyword_arg = move |word: &str| {
+        let is_keyword_arg = move |word: &Argument| {
             self.kwargs
                 .iter()
-                .find(|KeywordArg { name, .. }| *name == word)
+                // FIXME: very dumb solution to convert to String.
+                // Should instead enforce that the word must be a `Word`, not any kind of arg
+                .find(|KeywordArg { name, .. }| *name == word.to_string())
         };
 
         let mut positionals = Vec::with_capacity(self.n_positional as usize);
 
         for i_pos in 0..self.n_positional {
-            if let Some(&word) = words.get(current) {
+            if let Some(word) = args.get(current) {
                 positionals.push(word);
             } else {
                 return Err(self.positional_err(current as u32));
@@ -106,7 +117,7 @@ impl CommandSyntax {
         // FIXME: Break if current is greater than the number of total arguments
 
         for i_pos in n_style_args.into_iter() {
-            let Some(&word) = words.get(current) else {
+            let Some(word) = args.get(current) else {
                 if n_style_args.is_fixed() {
                     return Err(self.style_positional_err(
                         style.expect("Unreachable unless a style is defined"),
@@ -128,7 +139,7 @@ impl CommandSyntax {
 
         // remaining args
 
-        let mut args_iter = words.into_iter().skip(current);
+        let mut args_iter = args.into_iter().skip(current);
         let mut kwargs = Vec::new();
 
         while let Some(word) = args_iter.next() {
@@ -150,7 +161,7 @@ impl CommandSyntax {
 
         Ok(ParseResult {
             command_name: self.command_name,
-            positional: positionals,
+            positionals,
             style: style.map(|s| s.name),
             style_args,
             kwargs,
@@ -161,16 +172,22 @@ impl CommandSyntax {
         (self.styles.as_ref().map_or(0, |s| s.styles.len())) as u32
     }
 
-    fn determine_style(&self, words: &[&str]) -> Result<Style, ParseError> {
+    fn determine_style(&self, words: &[Argument]) -> Result<Style, ParseError> {
         let styles = self
             .styles
             .as_ref()
             .expect("should only be called for commands with styles");
-        let style_pos = styles.style_position;
+        // HACK: minus one accounts for the command name not being part of the arguments list
+        let style_pos = styles.style_position - 1;
 
-        let found_style = words[style_pos as usize];
+        let found_style = &words[style_pos as usize];
 
-        let Some(style) = styles.styles.iter().find(|sty| sty.name == found_style) else {
+        let Some(style) = styles
+            .styles
+            .iter()
+            // FIXME: to_string here could be costly
+            .find(|sty| sty.name == found_style.to_string())
+        else {
             return Err(self.invalid_style_err(found_style));
         };
 
@@ -180,8 +197,8 @@ impl CommandSyntax {
     fn read_arguments<'a>(
         &self,
         nargs: Nargs,
-        iter: &mut impl Iterator<Item = &'a str>,
-    ) -> Result<Vec<&'a str>, u32> {
+        iter: &mut impl Iterator<Item = &'a Argument>,
+    ) -> Result<Vec<&'a Argument>, u32> {
         let nargs = match nargs {
             Nargs::Int(n) => n,
             Nargs::None => 0,
@@ -200,8 +217,8 @@ impl CommandSyntax {
     fn read_arguments_for_keyword<'a>(
         &self,
         keyword: &KeywordArg,
-        iter: &mut impl Iterator<Item = &'a str>,
-    ) -> Result<Vec<&'a str>, ParseError> {
+        iter: &mut impl Iterator<Item = &'a Argument>,
+    ) -> Result<Vec<&'a Argument>, ParseError> {
         self.read_arguments(keyword.nargs, iter).map_err(|n_found| {
             ParseErrorKind::KeywordArguments {
                 found: n_found,
@@ -223,17 +240,17 @@ impl CommandSyntax {
         .with_command(self.command_name)
     }
 
-    fn invalid_keyword_err(&self, found: &str) -> ParseError {
+    fn invalid_keyword_err(&self, found: &Argument) -> ParseError {
         ParseErrorKind::InvalidKeyword {
-            found: found.to_owned(),
+            found: found.to_string(),
             valid: self.kwargs.iter().map(|k| k.name).join(", "),
         }
         .with_command(self.command_name)
     }
 
-    fn invalid_style_err(&self, found: &str) -> ParseError {
+    fn invalid_style_err(&self, found: &Argument) -> ParseError {
         ParseErrorKind::InvalidStyle {
-            found: found.to_owned(),
+            found: found.to_string(),
             valid: self
                 .styles
                 .as_ref()

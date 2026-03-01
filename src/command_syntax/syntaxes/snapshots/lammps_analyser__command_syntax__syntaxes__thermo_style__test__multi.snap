@@ -1,11 +1,25 @@
 ---
 source: src/command_syntax/syntaxes/thermo_style.rs
-expression: "syntax().parse(vec![\"thermo_style\", \"multi\"])"
+expression: "syntax().parse(&command_helper(\"thermo_style multi\\n\")).unwrap()"
 ---
 ParseResult {
     command_name: "thermo_style",
-    positional: [
-        "multi",
+    positionals: [
+        Argument {
+            kind: Word(
+                "multi",
+            ),
+            span: Span {
+                start: Point {
+                    row: 0,
+                    column: 13,
+                },
+                end: Point {
+                    row: 0,
+                    column: 18,
+                },
+            },
+        },
     ],
     style: Some(
         "multi",

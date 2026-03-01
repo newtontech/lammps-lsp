@@ -15,17 +15,31 @@ pub(crate) fn syntax() -> CommandSyntax {
 
 #[cfg(test)]
 mod test {
-    use itertools::Itertools;
+    use crate::ast::{from_node::FromNode, ts_to_ast, GenericCommand};
+
+    fn command_helper(text: &str) -> GenericCommand {
+        use crate::utils::parsing::setup_parser;
+
+        let mut ast = ts_to_ast(
+            &setup_parser().parse(text, None).expect("TS Parser Failed"),
+            text,
+        )
+        .expect("failed to parse");
+
+        std::mem::take(&mut ast.commands[0])
+            .try_into_generic()
+            .expect("failed to parse as GenericCommand")
+    }
 
     #[test]
     fn lmp_examples() {
-        let x = "boundary p p f".split_whitespace().collect_vec();
-        insta::assert_debug_snapshot!(super::syntax().parse(x).expect("Should parse"));
+        let x = command_helper("boundary p p f");
+        insta::assert_debug_snapshot!(super::syntax().parse(&x).expect("Should parse"));
 
-        let x = "boundary p fs p".split_whitespace().collect_vec();
-        insta::assert_debug_snapshot!(super::syntax().parse(x).expect("Should parse"));
+        let x = command_helper("boundary p fs p");
+        insta::assert_debug_snapshot!(super::syntax().parse(&x).expect("Should parse"));
 
-        let x = "boundary s f fm".split_whitespace().collect_vec();
-        insta::assert_debug_snapshot!(super::syntax().parse(x).expect("Should parse"));
+        let x = command_helper("boundary s f fm");
+        insta::assert_debug_snapshot!(super::syntax().parse(&x).expect("Should parse"));
     }
 }

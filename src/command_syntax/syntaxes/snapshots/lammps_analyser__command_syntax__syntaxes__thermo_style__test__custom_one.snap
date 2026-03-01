@@ -1,17 +1,45 @@
 ---
 source: src/command_syntax/syntaxes/thermo_style.rs
-expression: "syntax().parse(vec![\"thermo_style\", \"custom\", \"step\"])"
+expression: "syntax().parse(&command_helper(\"thermo_style custom step\\n\")).unwrap()"
 ---
 ParseResult {
     command_name: "thermo_style",
-    positional: [
-        "custom",
+    positionals: [
+        Argument {
+            kind: Word(
+                "custom",
+            ),
+            span: Span {
+                start: Point {
+                    row: 0,
+                    column: 13,
+                },
+                end: Point {
+                    row: 0,
+                    column: 19,
+                },
+            },
+        },
     ],
     style: Some(
         "custom",
     ),
     style_args: [
-        "step",
+        Argument {
+            kind: Word(
+                "step",
+            ),
+            span: Span {
+                start: Point {
+                    row: 0,
+                    column: 20,
+                },
+                end: Point {
+                    row: 0,
+                    column: 24,
+                },
+            },
+        },
     ],
     kwargs: [],
 }
