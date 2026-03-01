@@ -69,10 +69,8 @@ impl Ast {
                     ))
                 } else {
                     // ignore the actual result, just care about the error.
-                    command_syntax::syntaxes::syntax(command.name.as_str())?
-                        .parse(command)
-                        .err();
-                    None
+                    let syntax = command_syntax::syntaxes::syntax(command.name.as_str())?;
+                    syntax.parse(command).err().map(InvalidCommand::from)
                 }
             }
             _ => None,
