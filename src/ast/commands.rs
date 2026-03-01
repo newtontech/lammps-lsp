@@ -19,7 +19,13 @@ pub enum Command {
     Error(Span),
 }
 
-#[derive(Debug, PartialEq, Clone)]
+impl Default for Command {
+    fn default() -> Self {
+        Command::Generic(GenericCommand::default())
+    }
+}
+
+#[derive(Default, Debug, PartialEq, Clone)]
 pub struct GenericCommand {
     pub name: ast::Word,
     pub args: Vec<ast::Argument>,
@@ -38,6 +44,14 @@ impl Command {
             Command::VariableDef(cmd) => cmd.span,
             Command::Shell(span) => *span,
             Command::Error(span) => *span,
+        }
+    }
+
+    pub(crate) fn try_into_generic(self) -> Result<GenericCommand, Box<Self>> {
+        if let Self::Generic(v) = self {
+            Ok(v)
+        } else {
+            Err(Box::new(self))
         }
     }
 }

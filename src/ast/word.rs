@@ -42,3 +42,9 @@ impl FromNode for Word {
         Ok(Word::parse_word(node, text))
     }
 }
+
+impl PartialEq<str> for Word {
+    fn eq(&self, other: &str) -> bool {
+        self.contents == other
+    }
+}
