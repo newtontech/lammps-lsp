@@ -58,8 +58,8 @@ impl CommandSyntax {
                 positionals.push(word);
             } else {
                 panic!(
-                    "invalid self, expected {} arguments for {}, only found {}",
-                    self.n_positional, self.command_name, current
+                    "invalid {} command, expected {} positional arguments only found {}",
+                    self.command_name, self.n_positional, current
                 );
             }
             current += 1;
