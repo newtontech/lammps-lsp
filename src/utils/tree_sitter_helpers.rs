@@ -36,7 +36,7 @@ pub trait ExpectNode {
     type Output;
     type Error;
 
-    /// Convert an Optional<Node> or a Missing / Error node into an Error
+    /// Convert an [`Option<Node>`] or a Missing / Error node into an Error
     fn expect_node(self, message: impl Into<String>) -> Result<Self::Output, Self::Error>;
     fn expect_kind(
         self,

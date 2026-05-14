@@ -1,0 +1,414 @@
+---
+source: tests/strings.rs
+expression: result.ast
+---
+Ast {
+    commands: [
+        VariableDef(
+            VariableDef {
+                variable_id: Ident {
+                    name: "outputname",
+                    ident_type: Variable,
+                    span: Span {
+                        start: Point {
+                            row: 0,
+                            column: 9,
+                        },
+                        end: Point {
+                            row: 0,
+                            column: 19,
+                        },
+                    },
+                },
+                variable_style: Word {
+                    contents: "string",
+                    span: Span {
+                        start: Point {
+                            row: 0,
+                            column: 20,
+                        },
+                        end: Point {
+                            row: 0,
+                            column: 26,
+                        },
+                    },
+                },
+                args: [
+                    Argument {
+                        kind: Concatenation(
+                            [
+                                Argument {
+                                    kind: Word(
+                                        "nemd1.TH",
+                                    ),
+                                    span: Span {
+                                        start: Point {
+                                            row: 0,
+                                            column: 27,
+                                        },
+                                        end: Point {
+                                            row: 0,
+                                            column: 35,
+                                        },
+                                    },
+                                },
+                                Argument {
+                                    kind: VarCurly(
+                                        Ident {
+                                            name: "Thot",
+                                            ident_type: Variable,
+                                            span: Span {
+                                                start: Point {
+                                                    row: 0,
+                                                    column: 37,
+                                                },
+                                                end: Point {
+                                                    row: 0,
+                                                    column: 41,
+                                                },
+                                            },
+                                        },
+                                    ),
+                                    span: Span {
+                                        start: Point {
+                                            row: 0,
+                                            column: 35,
+                                        },
+                                        end: Point {
+                                            row: 0,
+                                            column: 42,
+                                        },
+                                    },
+                                },
+                                Argument {
+                                    kind: Word(
+                                        ".TC",
+                                    ),
+                                    span: Span {
+                                        start: Point {
+                                            row: 0,
+                                            column: 42,
+                                        },
+                                        end: Point {
+                                            row: 0,
+                                            column: 45,
+                                        },
+                                    },
+                                },
+                                Argument {
+                                    kind: VarCurly(
+                                        Ident {
+                                            name: "Tcold",
+                                            ident_type: Variable,
+                                            span: Span {
+                                                start: Point {
+                                                    row: 0,
+                                                    column: 47,
+                                                },
+                                                end: Point {
+                                                    row: 0,
+                                                    column: 52,
+                                                },
+                                            },
+                                        },
+                                    ),
+                                    span: Span {
+                                        start: Point {
+                                            row: 0,
+                                            column: 45,
+                                        },
+                                        end: Point {
+                                            row: 0,
+                                            column: 53,
+                                        },
+                                    },
+                                },
+                            ],
+                        ),
+                        span: Span {
+                            start: Point {
+                                row: 0,
+                                column: 27,
+                            },
+                            end: Point {
+                                row: 0,
+                                column: 53,
+                            },
+                        },
+                    },
+                ],
+                span: Span {
+                    start: Point {
+                        row: 0,
+                        column: 0,
+                    },
+                    end: Point {
+                        row: 0,
+                        column: 53,
+                    },
+                },
+            },
+        ),
+        VariableDef(
+            VariableDef {
+                variable_id: Ident {
+                    name: "outputname",
+                    ident_type: Variable,
+                    span: Span {
+                        start: Point {
+                            row: 1,
+                            column: 9,
+                        },
+                        end: Point {
+                            row: 1,
+                            column: 19,
+                        },
+                    },
+                },
+                variable_style: Word {
+                    contents: "string",
+                    span: Span {
+                        start: Point {
+                            row: 1,
+                            column: 20,
+                        },
+                        end: Point {
+                            row: 1,
+                            column: 26,
+                        },
+                    },
+                },
+                args: [
+                    Argument {
+                        kind: String(
+                            "\"nemd1.TH${Thot}.TC${Tcold}\"",
+                        ),
+                        span: Span {
+                            start: Point {
+                                row: 1,
+                                column: 27,
+                            },
+                            end: Point {
+                                row: 1,
+                                column: 55,
+                            },
+                        },
+                    },
+                ],
+                span: Span {
+                    start: Point {
+                        row: 1,
+                        column: 0,
+                    },
+                    end: Point {
+                        row: 1,
+                        column: 55,
+                    },
+                },
+            },
+        ),
+        VariableDef(
+            VariableDef {
+                variable_id: Ident {
+                    name: "nested_quotes",
+                    ident_type: Variable,
+                    span: Span {
+                        start: Point {
+                            row: 3,
+                            column: 9,
+                        },
+                        end: Point {
+                            row: 3,
+                            column: 22,
+                        },
+                    },
+                },
+                variable_style: Word {
+                    contents: "string",
+                    span: Span {
+                        start: Point {
+                            row: 3,
+                            column: 23,
+                        },
+                        end: Point {
+                            row: 3,
+                            column: 29,
+                        },
+                    },
+                },
+                args: [
+                    Argument {
+                        kind: String(
+                            "\"nemd1.TH${Thot}.TC'${Tcold}'\"",
+                        ),
+                        span: Span {
+                            start: Point {
+                                row: 3,
+                                column: 30,
+                            },
+                            end: Point {
+                                row: 3,
+                                column: 60,
+                            },
+                        },
+                    },
+                ],
+                span: Span {
+                    start: Point {
+                        row: 3,
+                        column: 0,
+                    },
+                    end: Point {
+                        row: 3,
+                        column: 60,
+                    },
+                },
+            },
+        ),
+        VariableDef(
+            VariableDef {
+                variable_id: Ident {
+                    name: "simple_exapansion",
+                    ident_type: Variable,
+                    span: Span {
+                        start: Point {
+                            row: 5,
+                            column: 9,
+                        },
+                        end: Point {
+                            row: 5,
+                            column: 26,
+                        },
+                    },
+                },
+                variable_style: Word {
+                    contents: "string",
+                    span: Span {
+                        start: Point {
+                            row: 5,
+                            column: 27,
+                        },
+                        end: Point {
+                            row: 5,
+                            column: 33,
+                        },
+                    },
+                },
+                args: [
+                    Argument {
+                        kind: String(
+                            "\"$x\"",
+                        ),
+                        span: Span {
+                            start: Point {
+                                row: 5,
+                                column: 34,
+                            },
+                            end: Point {
+                                row: 5,
+                                column: 38,
+                            },
+                        },
+                    },
+                ],
+                span: Span {
+                    start: Point {
+                        row: 5,
+                        column: 0,
+                    },
+                    end: Point {
+                        row: 5,
+                        column: 38,
+                    },
+                },
+            },
+        ),
+        Generic(
+            GenericCommand {
+                name: Word {
+                    contents: "print",
+                    span: Span {
+                        start: Point {
+                            row: 7,
+                            column: 0,
+                        },
+                        end: Point {
+                            row: 7,
+                            column: 5,
+                        },
+                    },
+                },
+                args: [
+                    Argument {
+                        kind: String(
+                            "\"# Volume [A^3/atom] Energy [eV/atom]\"",
+                        ),
+                        span: Span {
+                            start: Point {
+                                row: 7,
+                                column: 6,
+                            },
+                            end: Point {
+                                row: 7,
+                                column: 44,
+                            },
+                        },
+                    },
+                    Argument {
+                        kind: Word(
+                            "file",
+                        ),
+                        span: Span {
+                            start: Point {
+                                row: 7,
+                                column: 45,
+                            },
+                            end: Point {
+                                row: 7,
+                                column: 49,
+                            },
+                        },
+                    },
+                    Argument {
+                        kind: VarCurly(
+                            Ident {
+                                name: "evsvolfile",
+                                ident_type: Variable,
+                                span: Span {
+                                    start: Point {
+                                        row: 7,
+                                        column: 52,
+                                    },
+                                    end: Point {
+                                        row: 7,
+                                        column: 62,
+                                    },
+                                },
+                            },
+                        ),
+                        span: Span {
+                            start: Point {
+                                row: 7,
+                                column: 50,
+                            },
+                            end: Point {
+                                row: 7,
+                                column: 63,
+                            },
+                        },
+                    },
+                ],
+                start: Point {
+                    row: 7,
+                    column: 0,
+                },
+                end: Point {
+                    row: 7,
+                    column: 63,
+                },
+                start_byte: 213,
+                end_byte: 276,
+            },
+        ),
+    ],
+}
