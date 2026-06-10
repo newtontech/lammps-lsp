@@ -165,8 +165,8 @@ impl IdentiFinder {
 
         let undefined_fixes: Vec<_> = self
             .symbols
-            .iter()
-            .filter_map(|(_k, v)| {
+            .values()
+            .filter_map(|v| {
                 if v.defs.is_none() {
                     Some(v.refs.iter())
                 } else {

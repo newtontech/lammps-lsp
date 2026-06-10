@@ -6,6 +6,8 @@ use crate::docs::DOCS_CONTENTS;
 use crate::identifinder::IdentiFinder;
 use crate::input_script;
 use crate::input_script::InputScript;
+use crate::styles::ComputeStyle;
+use crate::styles::FixStyle;
 use crate::utils::get_symbol_at_point;
 use dashmap::DashMap;
 use std::str::FromStr;
@@ -66,6 +68,14 @@ impl LanguageServer for Backend {
                 document_symbol_provider: Some(OneOf::Left(true)),
                 workspace_symbol_provider: Some(OneOf::Left(true)),
                 hover_provider: Some(HoverProviderCapability::Simple(true)),
+                references_provider: Some(OneOf::Left(true)),
+                completion_provider: Some(CompletionOptions {
+                    trigger_characters: Some(vec![
+                        " ".to_string(),
+                        "/".to_string(),
+                    ]),
+                    ..Default::default()
+                }),
 
                 ..Default::default()
             },
@@ -267,6 +277,112 @@ impl LanguageServer for Backend {
         } else {
             Ok(None)
         }
+    }
+
+    async fn completion(&self, _params: CompletionParams) -> Result<Option<CompletionResponse>> {
+        let mut items: Vec<CompletionItem> = Vec::new();
+
+        for cmd in CommandName::all_command_strings() {
+            items.push(CompletionItem {
+                label: cmd.to_string(),
+                kind: Some(CompletionItemKind::KEYWORD),
+                detail: Some("LAMMPS command".to_string()),
+                ..Default::default()
+            });
+        }
+
+        for fix in FixStyle::all_fix_style_strings() {
+            items.push(CompletionItem {
+                label: fix.to_string(),
+                kind: Some(CompletionItemKind::VALUE),
+                detail: Some("fix style".to_string()),
+                ..Default::default()
+            });
+        }
+
+        for comp in ComputeStyle::all_compute_style_strings() {
+            items.push(CompletionItem {
+                label: comp.to_string(),
+                kind: Some(CompletionItemKind::VALUE),
+                detail: Some("compute style".to_string()),
+                ..Default::default()
+            });
+        }
+
+        let identifiers = self.identifinder.read().unwrap();
+        for name_and_type in identifiers.symbols().keys() {
+            let kind = match name_and_type.ident_type {
+                crate::ast::IdentType::Fix => CompletionItemKind::FUNCTION,
+                crate::ast::IdentType::Compute => CompletionItemKind::FUNCTION,
+                crate::ast::IdentType::Variable => CompletionItemKind::VARIABLE,
+            };
+            let detail = match name_and_type.ident_type {
+                crate::ast::IdentType::Fix => Some("fix ID"),
+                crate::ast::IdentType::Compute => Some("compute ID"),
+                crate::ast::IdentType::Variable => Some("variable"),
+            };
+            items.push(CompletionItem {
+                label: name_and_type.name.clone(),
+                kind: Some(kind),
+                detail: detail.map(str::to_string),
+                ..Default::default()
+            });
+        }
+        drop(identifiers);
+
+        Ok(Some(CompletionResponse::Array(items)))
+    }
+
+    async fn references(&self, params: ReferenceParams) -> Result<Option<Vec<Location>>> {
+        let uri = params.text_document_position.text_document.uri;
+        let position = params.text_document_position.position;
+        let point = position.into();
+
+        let identifiers = self.identifinder.read().unwrap();
+
+        let Some(name_and_type) = get_symbol_at_point(&identifiers, &point) else {
+            return Ok(None);
+        };
+
+        let symbol = identifiers
+            .symbols()
+            .iter()
+            .find(|(x, _)| *x == name_and_type);
+
+        let Some(symbol) = symbol else {
+            return Ok(None);
+        };
+
+        let mut locations: Vec<Location> = symbol
+            .1
+            .defs()
+            .iter()
+            .map(|def| Location {
+                uri: uri.clone(),
+                range: def.range().into_lsp_types(),
+            })
+            .collect();
+
+        locations.extend(symbol.1.refs().iter().map(|r| Location {
+            uri: uri.clone(),
+            range: r.range().into_lsp_types(),
+        }));
+
+        Ok(Some(locations))
+    }
+
+    async fn did_close(&self, params: DidCloseTextDocumentParams) {
+        self.client
+            .log_message(
+                MessageType::INFO,
+                format!("File closed: {}", params.text_document.uri),
+            )
+            .await;
+
+        self.document_map
+            .remove(&params.text_document.uri.to_string());
+        self.tree_map
+            .remove(&params.text_document.uri.to_string());
     }
 }
 
