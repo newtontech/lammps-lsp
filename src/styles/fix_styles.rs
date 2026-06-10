@@ -36,6 +36,12 @@ macro_rules! fix_styles {
                 }
             }
         }
+
+        impl FixStyle {
+            pub fn all_fix_style_strings() -> &'static [&'static str] {
+                &[$($lit,)+]
+            }
+        }
     };
 }
 

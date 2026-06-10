@@ -39,6 +39,12 @@ macro_rules! compute_styles {
                 }
             }
         }
+
+        impl ComputeStyle {
+            pub fn all_compute_style_strings() -> &'static [&'static str] {
+                &[$($lit,)+]
+            }
+        }
     };
 }
 

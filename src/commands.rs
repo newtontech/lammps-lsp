@@ -41,6 +41,12 @@ macro_rules! commands {
                 }
             }
         }
+
+        impl CommandName {
+            pub fn all_command_strings() -> &'static [&'static str] {
+                &[$($lit,)+]
+            }
+        }
     };
 }
 
