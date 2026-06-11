@@ -1,0 +1,117 @@
+{
+  "$id": "https://newtontech.local/schemas/diagnostic-engine-v1.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "properties": {
+    "actual": {},
+    "blocking": {
+      "type": "boolean"
+    },
+    "category": {
+      "enum": [
+        "syntax",
+        "schema",
+        "type/value",
+        "cross-file reference",
+        "semantic consistency",
+        "preflight/runtime-risk",
+        "style/deprecation"
+      ]
+    },
+    "code": {
+      "type": "string"
+    },
+    "confidence": {
+      "maximum": 1,
+      "minimum": 0,
+      "type": "number"
+    },
+    "expected": {},
+    "file_type": {
+      "type": "string"
+    },
+    "fix_hints": {
+      "type": "array"
+    },
+    "manual_ref": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "path": {
+      "type": "string"
+    },
+    "range": {
+      "properties": {
+        "end": {
+          "properties": {
+            "character": {
+              "minimum": 0,
+              "type": "integer"
+            },
+            "line": {
+              "minimum": 0,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "line",
+            "character"
+          ],
+          "type": "object"
+        },
+        "start": {
+          "properties": {
+            "character": {
+              "minimum": 0,
+              "type": "integer"
+            },
+            "line": {
+              "minimum": 0,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "line",
+            "character"
+          ],
+          "type": "object"
+        }
+      },
+      "required": [
+        "start",
+        "end"
+      ],
+      "type": "object"
+    },
+    "severity": {
+      "enum": [
+        "error",
+        "warning",
+        "information",
+        "hint"
+      ]
+    },
+    "software": {
+      "type": "string"
+    },
+    "source": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "code",
+    "severity",
+    "category",
+    "confidence",
+    "source",
+    "range",
+    "software",
+    "file_type",
+    "path",
+    "fix_hints",
+    "blocking"
+  ],
+  "title": "Diagnostic Engine v1 Rich Diagnostic",
+  "type": "object"
+}
