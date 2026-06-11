@@ -6,6 +6,7 @@ use crate::docs::DOCS_CONTENTS;
 use crate::identifinder::IdentiFinder;
 use crate::input_script;
 use crate::input_script::InputScript;
+use crate::matmaster;
 use crate::styles::ComputeStyle;
 use crate::styles::FixStyle;
 use crate::utils::get_symbol_at_point;
@@ -404,7 +405,14 @@ impl Backend {
 
         let text = self.document_map.get(&uri.to_string()).unwrap();
 
-        let state = input_script::InputScript::new(&text).expect("Failed");
+        let mut state = input_script::InputScript::new(&text).expect("Failed");
+
+        if let Some(project_root) = matmaster::find_project_root_from_uri(&uri) {
+            if let Some(config) = matmaster::MatMasterConfig::load(&project_root) {
+                let matmaster_diags = matmaster::check_source(&text, &config);
+                state.diagnostics.extend(matmaster_diags);
+            }
+        }
 
         let InputScript {
             ast,
