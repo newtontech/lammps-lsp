@@ -5,12 +5,12 @@ pub mod lsp;
 
 // Syntax Tree
 pub(crate) mod ast;
-pub(crate) mod spans;
+pub mod spans;
 
 pub(crate) mod utils;
 
 // Error handling
-pub(crate) mod diagnostics;
+pub mod diagnostics;
 pub(crate) mod spanned_error;
 
 // Input script validation
