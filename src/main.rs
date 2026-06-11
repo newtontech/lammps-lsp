@@ -7,9 +7,10 @@
 use anyhow::{Context, Result};
 
 use clap::Parser as ClapParser;
-use lammps_analyser::{diagnostic_report::FileNameReport, input_script};
+use lammps_analyser::{diagnostic_report::FileNameReport, input_script, matmaster};
 use owo_colors::OwoColorize;
 use std::fs::File;
+use std::path::Path;
 use tree_sitter::Parser;
 
 #[derive(Debug, clap::Parser)]
@@ -35,7 +36,16 @@ fn main() -> Result<()> {
         .set_language(&tree_sitter_lammps::LANGUAGE.into())
         .context("Could not load tree-sitter language")?;
 
-    let state = input_script::InputScript::new(&source_code)?;
+    let mut state = input_script::InputScript::new(&source_code)?;
+
+    // Run MatMaster checks if config exists at the project root
+    let source_path = Path::new(&cli.source);
+    if let Some(project_root) = matmaster::find_project_root(source_path) {
+        if let Some(config) = matmaster::MatMasterConfig::load(&project_root) {
+            let matmaster_diags = matmaster::check_source(&source_code, &config);
+            state.diagnostics.extend(matmaster_diags);
+        }
+    }
 
     // Output a syntax tree for debugging.
     if cli.output_tree {

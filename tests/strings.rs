@@ -1,4 +1,4 @@
-use lammps_analyser::input_script::{self, InputScript};
+use lammps_analyser::input_script::InputScript;
 
 #[test]
 fn double_str() {

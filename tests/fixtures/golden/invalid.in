@@ -1,0 +1,20 @@
+# Invalid LAMMPS input script with multiple issues
+units metal
+dimension 3
+boundary p p p
+atom_style atomic
+
+# Unknown command
+bogus_command arg1 arg2
+
+# Invalid lattice argument
+lattice fcc
+
+# Fix referencing undefined compute
+fix 1 all ave/time 100 5 500 c_undefined_compute file.out
+
+# Use undefined variable
+variable myvar equal ${undefined_var}
+
+# Run with negative steps (logical issue)
+run -10
