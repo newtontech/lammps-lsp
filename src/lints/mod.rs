@@ -1,11 +1,25 @@
+//! Lint infrastructure for LAMMPS input scripts.
+//!
+//! This module provides lint rules with diagnostic codes following
+//! the `LAMMPS-E###` (errors) and `LAMMPS-W###` (warnings) pattern.
+
 use std::collections::HashMap;
 
-use crate::diagnostics::Issue;
+use crate::diagnostics::{Diagnostic, Issue};
 use crate::spans::Span;
 use crate::{
     ast::{Ast, Ident},
     identifinder::IdentMap,
 };
+
+pub mod ampersand_comment;
+pub mod circular_deps;
+pub mod codes;
+pub mod rerun_detection;
+pub mod sexp;
+pub mod sim_box;
+pub mod string_expansion;
+pub mod style_order;
 
 /// If a fix is redefined before it is run, the first definition is useless.
 #[derive(Debug, PartialEq)]
@@ -15,7 +29,7 @@ struct MultiplyDefinedBeforeRun<'a> {
 
 #[derive(Debug)]
 /// An identifier that has been defined multiple times within a single run.
-pub(crate) struct RedfinedIdent<'a>(&'a Ident);
+pub(crate) struct RedfinedIdent<'a>(pub &'a Ident);
 
 pub(crate) fn redefined_identifiers<'a>(
     ast: &'a Ast,
@@ -65,15 +79,55 @@ fn fix_redef_before_run<'a>(
     redefined
 }
 
+/// Run all lints on the AST and source text, collecting diagnostics.
+///
+/// This is the main entry point for the linting pipeline.
+pub fn run_all_lints(ast: &Ast, source: &str) -> Vec<Diagnostic> {
+    let mut diagnostics = Vec::new();
+
+    // Issue #14: Ampersand in comments
+    for issue in ampersand_comment::AmpersandInComment::find_all(source) {
+        diagnostics.push(issue.diagnostic());
+    }
+
+    // Issue #13: Circular variable dependencies
+    for issue in circular_deps::CircularVariableDependency::find_all(ast) {
+        diagnostics.push(issue.diagnostic());
+    }
+
+    // Issue #24: Simulation box check
+    for issue in sim_box::SimBoxNotDefined::find_all(ast) {
+        diagnostics.push(issue.diagnostic());
+    }
+
+    // Issue #25: Style definition order
+    for issue in style_order::StyleAfterDataRead::find_all(ast) {
+        diagnostics.push(issue.diagnostic());
+    }
+
+    // Issue #23: String variable expansion
+    for issue in string_expansion::StringVarExpansion::find_all(ast) {
+        diagnostics.push(issue.diagnostic());
+    }
+
+    // Issue #8: Rerun detection
+    for issue in rerun_detection::RerunDetection::find_all(ast) {
+        diagnostics.push(issue.diagnostic());
+    }
+
+    diagnostics
+}
+
 impl Issue for RedfinedIdent<'_> {
     fn diagnostic(&self) -> crate::diagnostics::Diagnostic {
         let ident = self.0;
         crate::diagnostics::Diagnostic {
+            code: None,
             name: "redefined before `run` command",
             severity: crate::diagnostics::Severity::Warning,
             span: ident.span,
             message: format![
-                "{} `{}` defined multiple times before run command",
+                "LAMMPS-W201: {} `{}` defined multiple times before run command",
                 ident.ident_type, ident.name
             ],
         }
@@ -148,5 +202,25 @@ mod tests {
         let v = fix_redef_before_run(&ast, idents.symbols());
         assert_eq!(v.len(), 1);
         dbg!(v);
+    }
+
+    #[test]
+    fn run_all_lints_no_issues() {
+        let source = "units metal\n";
+        let tree = utils::testing::parse(source);
+        let ast = ts_to_ast(&tree, source).unwrap();
+
+        let diags = run_all_lints(&ast, source);
+        assert!(diags.is_empty());
+    }
+
+    #[test]
+    fn run_all_lints_with_ampersand_comment() {
+        let source = "# this is a comment &\nunits metal\n";
+        let tree = utils::testing::parse(source);
+        let ast = ts_to_ast(&tree, source).unwrap();
+
+        let diags = run_all_lints(&ast, source);
+        assert!(diags.iter().any(|d| d.name == "ampersand-in-comment"));
     }
 }

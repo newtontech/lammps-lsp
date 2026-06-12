@@ -38,6 +38,7 @@ impl InvalidArguments {
 impl Issue for InvalidArguments {
     fn diagnostic(&self) -> crate::diagnostics::Diagnostic {
         Diagnostic {
+            code: None,
             name: "invalid arguments",
             severity: crate::diagnostics::Severity::Error,
             span: self.range,
@@ -52,6 +53,7 @@ impl From<InvalidArguments> for lsp_types::Diagnostic {
             range: value.range.into_lsp_types(),
             severity: Some(DiagnosticSeverity::ERROR),
             message: value.to_string(),
+            code: None,
 
             ..Default::default()
         }

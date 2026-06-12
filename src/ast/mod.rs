@@ -5,6 +5,7 @@
 #![deny(clippy::expect_used)]
 
 // Sub modules.
+pub mod expressions;
 pub mod find_node;
 pub mod from_node;
 pub mod impl_helpers;
@@ -12,7 +13,6 @@ pub mod impl_helpers;
 mod arguments;
 mod commands;
 mod compute_def;
-mod expressions;
 mod fix_def;
 mod ident;
 mod variable_def;

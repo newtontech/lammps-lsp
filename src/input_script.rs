@@ -121,9 +121,14 @@ impl<'src> InputScript<'src> {
     }
 
     fn run_lints(&mut self) {
+        // Issue #3: Existing redefined-identifier lint
         self.diagnostics.extend(
             redefined_identifiers(&self.ast, self.identifinder.symbols()).map(|id| id.diagnostic()),
-        )
+        );
+
+        // Issues #8, #13, #14, #23, #24, #25: New lint pipeline
+        self.diagnostics
+            .extend(crate::lints::run_all_lints(&self.ast, self.source_code));
     }
 
     /// Helper method to extend the diagnostics

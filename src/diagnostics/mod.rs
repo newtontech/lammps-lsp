@@ -25,9 +25,8 @@ pub struct Diagnostic {
     pub span: Span,
     /// Message of the diagnostic.
     pub message: String,
-    // Extra information that can be used to understand the issue.
-    // TODO: Re add this field once we work out how to add the URI to it..
-    // pub information: Vec<Info>,
+    /// Optional diagnostic code (e.g., "LAMMPS-E100").
+    pub code: Option<String>,
 }
 
 // #[derive(Default, Clone, Eq, PartialEq, Debug)]
@@ -55,16 +54,30 @@ impl Display for Diagnostic {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let start = self.span.start;
         let end = self.span.end;
-        write!(
-            f,
-            "{}: {}:{}-{}:{},{}",
-            self.severity,
-            self.message,
-            start.row + 1,
-            start.column + 1,
-            end.row + 1,
-            end.column + 1
-        )
+        if let Some(code) = &self.code {
+            write!(
+                f,
+                "{} [{}]: {}:{}-{}:{},{}",
+                self.severity,
+                code,
+                self.message,
+                start.row + 1,
+                start.column + 1,
+                end.row + 1,
+                end.column + 1
+            )
+        } else {
+            write!(
+                f,
+                "{}: {}:{}-{}:{},{}",
+                self.severity,
+                self.message,
+                start.row + 1,
+                start.column + 1,
+                end.row + 1,
+                end.column + 1
+            )
+        }
     }
 }
 
@@ -124,13 +137,19 @@ impl From<Diagnostic> for lsp_types::Diagnostic {
             severity,
             span,
             message,
+            code,
             ..
         } = value;
+
+        let code_description = code.as_ref().map(|c| {
+            lsp_types::NumberOrString::String(c.clone())
+        });
 
         lsp_types::Diagnostic {
             range: span.into_lsp_types(),
             severity: Some(severity.into()),
             source: Some("lammps-analyser".into()),
+            code: code_description,
             message,
             ..Default::default()
         }

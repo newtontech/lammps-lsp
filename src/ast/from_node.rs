@@ -72,6 +72,7 @@ impl diagnostics::Issue for SpannedError<FromNodeError> {
             severity: diagnostics::Severity::Error,
             span: self.span,
             message: self.to_string(),
+            code: None,
         }
     }
 }

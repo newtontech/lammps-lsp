@@ -221,6 +221,7 @@ pub struct UnusedIdent {
 impl From<UnusedIdent> for lsp_types::Diagnostic {
     fn from(value: UnusedIdent) -> Self {
         lsp_types::Diagnostic {
+            code: None,
             message: format!("unused {} `{}`", value.ident.ident_type, value.ident.name),
             range: value.ident.range().into_lsp_types(),
             severity: Some(lsp_types::DiagnosticSeverity::WARNING),
@@ -254,6 +255,7 @@ impl Issue for UnusedIdent {
             severity: crate::diagnostics::Severity::Warning,
             span: self.ident.span,
             message: self.to_string(),
+            code: None,
         }
     }
 }
@@ -265,6 +267,7 @@ impl Issue for UndefinedIdent {
             severity: crate::diagnostics::Severity::Error,
             span: self.ident.span,
             message: self.to_string(),
+            code: None,
         }
     }
 }

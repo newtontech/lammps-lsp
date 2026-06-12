@@ -225,6 +225,7 @@ impl Issue for ParseError {
                 end: self.end,
             },
             message: format!("invalid syntax `{}`", self.text),
+            code: None,
         }
     }
 }
@@ -252,6 +253,7 @@ impl Issue for MissingToken {
                 end: self.start,
             },
             message: self.to_string(),
+            code: None,
         }
     }
 }
