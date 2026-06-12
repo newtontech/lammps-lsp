@@ -9,8 +9,14 @@ This wiki contains comprehensive knowledge about LAMMPS molecular dynamics simul
 ### [raw/](raw/) - Source Evidence / 原始证据
 - [raw/assets/](raw/assets/) - Source documentation and code extracts
   - `README.md` - Project overview
-  - `lammps_docs_md/` - 979 LAMMPS documentation files
+  - `lammps_docs_md/` - 990 LAMMPS documentation files
   - `*.rs` - Source code extracts
+  - `lammps-ml-potentials.md` - ML potentials reference
+  - `lammps-python-api.md` - Python interface reference
+  - `lammps-plugins.md` - Plugin mechanism reference
+  - `lammps-rheo-package.md` - RHEO SPH package reference
+  - `lammps-advanced-tutorials.md` - Advanced tutorials compilation
+  - `lammps-new-features-2024-2025.md` - Recent features changelog
 
 ### [wiki/entities/](wiki/entities/) - Entity Pages / 实体页面
 LAMMPS-specific commands and concepts:
@@ -38,6 +44,10 @@ LAMMPS-specific commands and concepts:
 - [Delete_Atoms_Command](wiki/entities/Delete_Atoms_Command.md) - Remove atoms
 - [Create_Atoms_Command](wiki/entities/Create_Atoms_Command.md) - Add atoms
 - [Lattice_Command](wiki/entities/Lattice_Command.md) - Crystal lattices
+- [RHEO_Package](wiki/entities/RHEO_Package.md) - RHEO SPH fluid dynamics
+- [ML_Potentials](wiki/entities/ML_Potentials.md) - Machine learning potentials
+- [Plugin_Command](wiki/entities/Plugin_Command.md) - Plugin extension mechanism
+- [Python_Interface](wiki/entities/Python_Interface.md) - Python API
 
 ### [wiki/concepts/](wiki/concepts/) - Concept Pages / 概念页面
 Cross-cutting MD concepts:
@@ -49,6 +59,7 @@ Cross-cutting MD concepts:
 - [Thermostat](wiki/concepts/Thermostat.md) - Temperature control
 - [Barostat](wiki/concepts/Barostat.md) - Pressure control
 - [Units_System](wiki/concepts/Units_System.md) - Unit systems and conversions
+- [Machine_Learning_Potentials](wiki/concepts/Machine_Learning_Potentials.md) - ML-IAP concepts
 
 ### [wiki/synthesis/](wiki/synthesis/) - Synthesis Pages / 综合页面
 Workflows and references:
@@ -56,6 +67,7 @@ Workflows and references:
 - [LAMMPS_Data_Format](wiki/synthesis/LAMMPS_Data_Format.md) - Data file specification
 - [Output_Files](wiki/synthesis/Output_Files.md) - Output file types
 - [Common_Patterns](wiki/synthesis/Common_Patterns.md) - Reusable patterns
+- [Advanced_Features](wiki/synthesis/Advanced_Features.md) - Advanced workflows and methods
 
 ## Project Context / 项目背景
 
@@ -78,7 +90,7 @@ Workflows and references:
 
 - **Language**: Rust
 - **Parser**: tree-sitter-lammps
-- **Documentation**: 979 LAMMPS manual pages
+- **Documentation**: 990 LAMMPS manual pages
 - **Architecture**: Source in `src/`, docs in `lammps_docs_md/`
 
 ## Navigation / 导航
@@ -92,6 +104,7 @@ Workflows and references:
 
 This wiki was generated for lammps-lsp project.
 Last updated: 2025-06-12
+Expanded: 2026-06-12 (added RHEO, ML potentials, plugins, Python API, advanced features)
 
 ## Source / 来源
 
