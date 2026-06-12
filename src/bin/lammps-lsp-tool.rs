@@ -17,6 +17,11 @@ struct Cli {
 
 #[derive(Debug, Subcommand)]
 enum Command {
+    /// Print the OpenQC LSP capability manifest as JSON
+    Capabilities {
+        #[arg(long, default_value = "json")]
+        format: String,
+    },
     /// Check a LAMMPS input script for diagnostics
     Check {
         source: PathBuf,
@@ -109,6 +114,7 @@ enum LintSub {
 fn main() -> Result<()> {
     let cli = Cli::parse();
     match cli.command {
+        Command::Capabilities { .. } => capabilities(),
         Command::Check { source, .. } => check(source),
         Command::Lint { sub } => lint_cmd(sub),
         Command::Explain { rule } => explain_rule(&rule),
@@ -149,6 +155,60 @@ fn main() -> Result<()> {
             ..
         } => agent_operation(source, "fix", line, character),
     }
+}
+
+fn capabilities() -> Result<()> {
+    if let Some(manifest) = find_manifest()? {
+        println!("{}", serde_json::to_string_pretty(&manifest)?);
+        return Ok(());
+    }
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&json!({
+            "schema": "OpenQCLspCapabilities",
+            "version": 1,
+            "software": "lammps",
+            "capabilities": [
+                "diagnostics",
+                "rich-diagnostics",
+                "completion",
+                "hover",
+                "symbols",
+                "fix-preview",
+                "llm-wiki",
+                "openqc-context",
+            ],
+            "agentCli": {
+                "operations": ["capabilities", "check", "context", "complete", "hover", "symbols", "fix"],
+                "jsonFormat": true,
+                "failOnBlocking": true,
+            },
+        }))?
+    );
+    Ok(())
+}
+
+fn find_manifest() -> Result<Option<serde_json::Value>> {
+    let mut roots = Vec::new();
+    if let Ok(cwd) = std::env::current_dir() {
+        roots.push(cwd);
+    }
+    if let Ok(exe) = std::env::current_exe() {
+        if let Some(parent) = exe.parent() {
+            roots.push(parent.to_path_buf());
+        }
+    }
+    for root in roots {
+        for ancestor in root.ancestors() {
+            let candidate = ancestor.join("lsp-capabilities.json");
+            if candidate.exists() {
+                let text = std::fs::read_to_string(&candidate)
+                    .with_context(|| format!("failed to read {}", candidate.display()))?;
+                return Ok(Some(serde_json::from_str(&text)?));
+            }
+        }
+    }
+    Ok(None)
 }
 
 fn check(source: PathBuf) -> Result<()> {

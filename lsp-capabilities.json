@@ -1,0 +1,96 @@
+{
+  "schema": "OpenQCLspCapabilities",
+  "version": 1,
+  "id": "lammps-lsp",
+  "software": "lammps",
+  "displayName": "LAMMPS",
+  "languageId": "lammps",
+  "executable": "lmp-lsp",
+  "defaultBranch": "master",
+  "filePatterns": [
+    "*.lmp",
+    "*.lammps",
+    "*.lmps",
+    "in.lammps"
+  ],
+  "maturity": "experimental",
+  "blockingPolicy": {
+    "mode": "warning-only",
+    "description": "Diagnostics are reported to OpenQC and agents without blocking submission by default."
+  },
+  "capabilities": [
+    "agent-envelope",
+    "agent-json-cli",
+    "completion",
+    "diagnostic-engine-v1",
+    "diagnostics",
+    "fix-preview",
+    "hover",
+    "llm-wiki",
+    "manifest",
+    "navigation",
+    "openqc-context",
+    "output-log-diagnostics",
+    "references-or-rename-where-implemented",
+    "rich-diagnostics",
+    "routing",
+    "source-provenance",
+    "symbols"
+  ],
+  "agentCli": {
+    "command": "lammps-lsp-tool",
+    "operations": [
+      "capabilities",
+      "check",
+      "context",
+      "complete",
+      "hover",
+      "symbols",
+      "fix"
+    ],
+    "jsonFormat": true,
+    "failOnBlocking": true
+  },
+  "diagnosticSchema": "diagnostics/diagnostic-engine-v1.schema.json",
+  "wikiPaths": {
+    "plan": "docs/LLM-WIKI-PLAN.md",
+    "rawAssets": "raw/assets",
+    "entities": "wiki/entities",
+    "concepts": "wiki/concepts",
+    "synthesis": "wiki/synthesis",
+    "index": "index.md",
+    "log": "log.md"
+  },
+  "fixturePaths": {
+    "valid": [
+      "tests/fixtures/valid",
+      "test/fixtures/valid"
+    ],
+    "invalid": [
+      "tests/fixtures/invalid",
+      "test/fixtures/invalid"
+    ],
+    "logs": [
+      "tests/fixtures/logs",
+      "test/fixtures/logs"
+    ]
+  },
+  "outputLogPatterns": [
+    "log.lammps",
+    "lammps.log",
+    "*.lammps.log"
+  ],
+  "openqc": {
+    "registryId": "lammps-lsp",
+    "repoName": "lammps-lsp",
+    "contextContract": "DSLAuthoringContext",
+    "diagnosticEnvelope": "DiagnosticEnvelope/v1"
+  },
+  "sourceProvenance": [
+    {
+      "kind": "official_docs",
+      "label": "LAMMPS 30 Mar 2026 manual",
+      "url": "https://docs.lammps.org/Manual.html"
+    }
+  ]
+}
