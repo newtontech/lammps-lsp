@@ -17,6 +17,7 @@ expression: result.diagnostics
             },
         },
         message: "undefined variable `Tcold`",
+        code: None,
     },
     Diagnostic {
         name: "undefined identifier",
@@ -32,6 +33,7 @@ expression: result.diagnostics
             },
         },
         message: "undefined variable `Tcold`",
+        code: None,
     },
     Diagnostic {
         name: "undefined identifier",
@@ -47,6 +49,7 @@ expression: result.diagnostics
             },
         },
         message: "undefined variable `Thot`",
+        code: None,
     },
     Diagnostic {
         name: "undefined identifier",
@@ -62,6 +65,7 @@ expression: result.diagnostics
             },
         },
         message: "undefined variable `Thot`",
+        code: None,
     },
     Diagnostic {
         name: "undefined identifier",
@@ -77,6 +81,7 @@ expression: result.diagnostics
             },
         },
         message: "undefined variable `Thot`",
+        code: None,
     },
     Diagnostic {
         name: "undefined identifier",
@@ -92,6 +97,7 @@ expression: result.diagnostics
             },
         },
         message: "undefined variable `evsvolfile`",
+        code: None,
     },
     Diagnostic {
         name: "undefined identifier",
@@ -107,6 +113,7 @@ expression: result.diagnostics
             },
         },
         message: "undefined variable `x`",
+        code: None,
     },
     Diagnostic {
         name: "unused identifier",
@@ -122,6 +129,7 @@ expression: result.diagnostics
             },
         },
         message: "unused variable `nested_quotes`",
+        code: None,
     },
     Diagnostic {
         name: "unused identifier",
@@ -137,6 +145,7 @@ expression: result.diagnostics
             },
         },
         message: "unused variable `outputname`",
+        code: None,
     },
     Diagnostic {
         name: "unused identifier",
@@ -152,6 +161,7 @@ expression: result.diagnostics
             },
         },
         message: "unused variable `outputname`",
+        code: None,
     },
     Diagnostic {
         name: "unused identifier",
@@ -167,5 +177,70 @@ expression: result.diagnostics
             },
         },
         message: "unused variable `simple_exapansion`",
+        code: None,
+    },
+    Diagnostic {
+        name: "string-var-expansion",
+        severity: Warning,
+        span: Span {
+            start: Point {
+                row: 0,
+                column: 0,
+            },
+            end: Point {
+                row: 0,
+                column: 53,
+            },
+        },
+        message: "LAMMPS-W501: string variable `outputname` is defined but never expanded with `${outputname}`",
+        code: None,
+    },
+    Diagnostic {
+        name: "string-var-expansion",
+        severity: Warning,
+        span: Span {
+            start: Point {
+                row: 1,
+                column: 0,
+            },
+            end: Point {
+                row: 1,
+                column: 55,
+            },
+        },
+        message: "LAMMPS-W501: string variable `outputname` is defined but never expanded with `${outputname}`",
+        code: None,
+    },
+    Diagnostic {
+        name: "string-var-expansion",
+        severity: Warning,
+        span: Span {
+            start: Point {
+                row: 3,
+                column: 0,
+            },
+            end: Point {
+                row: 3,
+                column: 60,
+            },
+        },
+        message: "LAMMPS-W501: string variable `nested_quotes` is defined but never expanded with `${nested_quotes}`",
+        code: None,
+    },
+    Diagnostic {
+        name: "string-var-expansion",
+        severity: Warning,
+        span: Span {
+            start: Point {
+                row: 5,
+                column: 0,
+            },
+            end: Point {
+                row: 5,
+                column: 38,
+            },
+        },
+        message: "LAMMPS-W501: string variable `simple_exapansion` is defined but never expanded with `${simple_exapansion}`",
+        code: None,
     },
 ]

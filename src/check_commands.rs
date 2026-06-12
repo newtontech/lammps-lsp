@@ -41,6 +41,7 @@ impl Issue for InvalidCommand {
         Diagnostic {
             name: "invalid command",
             message: self.to_string(),
+            code: None,
             span,
             severity: diagnostics::Severity::Error,
         }

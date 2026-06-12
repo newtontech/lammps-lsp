@@ -131,6 +131,7 @@ impl Issue for InvalidStyle {
                 end: self.end,
             },
             message: format!("invalid {}: `{}`", self.style_type, self.name),
+            code: None,
         }
     }
 }
