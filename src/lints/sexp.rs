@@ -4,7 +4,9 @@
 //! useful for snapshot testing and debugging.
 
 use crate::ast::expressions::{BinaryOp, Index, UnaryOp};
-use crate::ast::{Argument, ArgumentKind, Ast, Command, ComputeDef, Expression, FixDef, VariableDef, Word};
+use crate::ast::{
+    Argument, ArgumentKind, Ast, Command, ComputeDef, Expression, FixDef, VariableDef, Word,
+};
 use crate::spans::Span;
 
 /// Trait for serializing AST nodes into S-expression strings.
@@ -45,7 +47,7 @@ impl SExp for Command {
 
 impl SExp for Word {
     fn to_sexp(&self) -> String {
-        format!("{}", self.contents)
+        self.contents.to_string()
     }
 }
 
@@ -61,7 +63,7 @@ impl SExp for ArgumentKind {
             Self::Int(n) => format!("{n}"),
             Self::Float(f) => format!("{f}"),
             Self::Bool(b) => format!("{b}"),
-            Self::Word(w) => format!("{w}"),
+            Self::Word(w) => w.to_string(),
             Self::String(s) => format!("\"{}\"", s),
             Self::RawString(s) => format!("'{}'", s),
             Self::TripleString(s) => format!("\"\"\"{}\"\"\"", s),
@@ -132,7 +134,12 @@ impl SExp for Expression {
             Self::UnderscoreIdent(ident) => format!("(ident {})", ident.name),
             Self::UnaryOp(op, expr) => format!("({} {})", unaryop_to_sexp(op), expr.to_sexp()),
             Self::BinaryOp(lhs, op, rhs) => {
-                format!("({} {} {})", binop_to_sexp(op), lhs.to_sexp(), rhs.to_sexp())
+                format!(
+                    "({} {} {})",
+                    binop_to_sexp(op),
+                    lhs.to_sexp(),
+                    rhs.to_sexp()
+                )
             }
             Self::Function(name, args) => {
                 let inner: Vec<String> = args.iter().map(|a| a.to_sexp()).collect();
@@ -143,7 +150,9 @@ impl SExp for Expression {
             Self::AtomProperty(kw) => format!("(atom-prop {})", kw.contents),
             Self::Constant(c) => format!("(const {})", c.contents),
             Self::Word(w) => format!("(word {})", w.contents),
-            Self::Indexing(expr, idx) => format!("(index {} [{}])", expr.to_sexp(), index_to_sexp(idx)),
+            Self::Indexing(expr, idx) => {
+                format!("(index {} [{}])", expr.to_sexp(), index_to_sexp(idx))
+            }
             Self::VarRound(expr) => format!("($({}))", expr.to_sexp()),
             Self::VarCurly(ident) => format!("(${{{}}})", ident.name),
             Self::SimpleExpansion(ident) => format!("(${})", ident.name),

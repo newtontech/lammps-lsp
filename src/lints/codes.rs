@@ -69,6 +69,20 @@ pub enum LintCode {
     // Identifier / reference (E600-E699, W600-W699)
     /// W600: Rerun detection in docs file.
     RerunInDocs,
+
+    // File checking (E700-E799, W700-W799)
+    /// E700: Missing include file.
+    MissingInclude,
+    /// E701: Missing data file.
+    MissingDataFile,
+
+    // Units/pair_style consistency (W800-W899)
+    /// W800: Suspicious units/pair_style combination.
+    SuspiciousUnitsPairStyle,
+
+    // Log parsing (E900-E999)
+    /// E900: LAMMPS ERROR line in log output.
+    LammpsLogError,
 }
 
 impl LintCode {
@@ -100,6 +114,10 @@ impl LintCode {
             Self::InvalidVarReference => "LAMMPS-E502",
 
             Self::RerunInDocs => "LAMMPS-W600",
+            Self::MissingInclude => "LAMMPS-E700",
+            Self::MissingDataFile => "LAMMPS-E701",
+            Self::SuspiciousUnitsPairStyle => "LAMMPS-W800",
+            Self::LammpsLogError => "LAMMPS-E900",
         }
     }
 
@@ -131,6 +149,10 @@ impl LintCode {
             Self::InvalidVarReference => "invalid-var-reference",
 
             Self::RerunInDocs => "rerun-in-docs",
+            Self::MissingInclude => "missing-include",
+            Self::MissingDataFile => "missing-data-file",
+            Self::SuspiciousUnitsPairStyle => "suspicious-units-pair-style",
+            Self::LammpsLogError => "lammps-log-error",
         }
     }
 }
@@ -168,6 +190,10 @@ mod tests {
             LintCode::StringVarExpansion,
             LintCode::InvalidVarReference,
             LintCode::RerunInDocs,
+            LintCode::MissingInclude,
+            LintCode::MissingDataFile,
+            LintCode::SuspiciousUnitsPairStyle,
+            LintCode::LammpsLogError,
         ];
 
         let codes: Vec<&str> = all.iter().map(|c| c.code()).collect();

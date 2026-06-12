@@ -79,6 +79,7 @@ impl Issue for MatMasterIssue {
             severity: self.severity,
             span: self.span,
             message: self.message.clone(),
+            code: Some(self.code.to_string()),
         }
     }
 }
@@ -126,17 +127,20 @@ fn check_pair_coeff_order(lines: &[&str]) -> Vec<Diagnostic> {
             saw_pair_style = true;
         } else if lower.starts_with("pair_coeff") && !saw_pair_style {
             let col = line.find("pair_coeff").unwrap_or(0);
-            diagnostics.push(MatMasterIssue {
-                code: "LMP800",
-                severity: Severity::Error,
-                span: Span {
-                    start: (i, col).into(),
-                    end: (i, col + "pair_coeff".len()).into(),
-                },
-                message: "pair_style must be set before pair_coeff (MatMaster execution contract)"
-                    .into(),
-            }
-            .diagnostic());
+            diagnostics.push(
+                MatMasterIssue {
+                    code: "LMP800",
+                    severity: Severity::Error,
+                    span: Span {
+                        start: (i, col).into(),
+                        end: (i, col + "pair_coeff".len()).into(),
+                    },
+                    message:
+                        "pair_style must be set before pair_coeff (MatMaster execution contract)"
+                            .into(),
+                }
+                .diagnostic(),
+            );
         }
     }
     diagnostics
@@ -170,18 +174,20 @@ fn check_run_positive(lines: &[&str]) -> Vec<Diagnostic> {
         if let Ok(val) = arg.parse::<i64>() {
             if val <= 0 {
                 let col = line.find("run").unwrap_or(0);
-                diagnostics.push(MatMasterIssue {
-                    code: "LMP801",
-                    severity: Severity::Warning,
-                    span: Span {
-                        start: (i, col).into(),
-                        end: (i, col + "run".len()).into(),
-                    },
-                    message: format!(
-                        "run timestep should be positive (MatMaster safety check), got {val}"
-                    ),
-                }
-                .diagnostic());
+                diagnostics.push(
+                    MatMasterIssue {
+                        code: "LMP801",
+                        severity: Severity::Warning,
+                        span: Span {
+                            start: (i, col).into(),
+                            end: (i, col + "run".len()).into(),
+                        },
+                        message: format!(
+                            "run timestep should be positive (MatMaster safety check), got {val}"
+                        ),
+                    }
+                    .diagnostic(),
+                );
             }
         }
     }
@@ -209,19 +215,21 @@ fn check_include_paths(lines: &[&str]) -> Vec<Diagnostic> {
         let path = rest.split_whitespace().next().unwrap_or("").trim();
         if path.contains("..") {
             let col = line.find("include").unwrap_or(0);
-            diagnostics.push(MatMasterIssue {
-                code: "LMP802",
-                severity: Severity::Warning,
-                span: Span {
-                    start: (i, col).into(),
-                    end: (i, col + "include".len()).into(),
-                },
-                message: format!(
-                    "include path '{path}' uses '..' which escapes the project root \
+            diagnostics.push(
+                MatMasterIssue {
+                    code: "LMP802",
+                    severity: Severity::Warning,
+                    span: Span {
+                        start: (i, col).into(),
+                        end: (i, col + "include".len()).into(),
+                    },
+                    message: format!(
+                        "include path '{path}' uses '..' which escapes the project root \
                      (MatMaster security check)"
-                ),
-            }
-            .diagnostic());
+                    ),
+                }
+                .diagnostic(),
+            );
         }
     }
     diagnostics
@@ -455,6 +463,9 @@ mod tests {
         let diags = check_source(source, &config);
         // invalid.in has "run -10" which should trigger LMP801
         let lmp801: Vec<_> = diags.iter().filter(|d| d.name == "LMP801").collect();
-        assert!(!lmp801.is_empty(), "invalid.in should trigger LMP801 for 'run -10'");
+        assert!(
+            !lmp801.is_empty(),
+            "invalid.in should trigger LMP801 for 'run -10'"
+        );
     }
 }

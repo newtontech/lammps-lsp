@@ -1,0 +1,13 @@
+{
+  "rule_id": "lammps.style.unknown",
+  "severity": "error",
+  "code": "LAMMPS-E300",
+  "fixture": "invalid/unknown_style.in",
+  "expected_diagnostics": [
+    {
+      "code": "LAMMPS-E300",
+      "severity": "error",
+      "message_contains": "invalid fix style"
+    }
+  ]
+}

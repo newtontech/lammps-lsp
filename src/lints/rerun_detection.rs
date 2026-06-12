@@ -86,7 +86,7 @@ impl Issue for RerunDetection {
     fn diagnostic(&self) -> Diagnostic {
         match &self.context {
             RerunContext::RerunCommand => Diagnostic {
-            code: None,
+                code: None,
                 name: "rerun-in-docs",
                 severity: Severity::Info,
                 span: self.span,
@@ -95,7 +95,7 @@ impl Issue for RerunDetection {
                     .to_string(),
             },
             RerunContext::MissingDumpFile(file) => Diagnostic {
-            code: None,
+                code: None,
                 name: "rerun-in-docs",
                 severity: Severity::Warning,
                 span: self.span,
@@ -121,7 +121,10 @@ mod tests {
 
         let found = RerunDetection::find_all(&ast);
         assert_eq!(found.len(), 1);
-        assert_eq!(found[0].context, RerunContext::MissingDumpFile("dump.file".to_string()));
+        assert_eq!(
+            found[0].context,
+            RerunContext::MissingDumpFile("dump.file".to_string())
+        );
     }
 
     #[test]

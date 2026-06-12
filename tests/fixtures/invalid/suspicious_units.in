@@ -1,0 +1,3 @@
+# Invalid: suspicious units/pair_style combination
+units metal
+pair_style lj/cut 2.5

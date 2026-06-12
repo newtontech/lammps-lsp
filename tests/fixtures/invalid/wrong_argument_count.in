@@ -1,0 +1,3 @@
+# Invalid: wrong argument count for boundary
+units metal
+boundary p p

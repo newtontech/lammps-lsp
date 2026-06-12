@@ -1,0 +1,3 @@
+# Invalid: include of non-existent file
+include nonexistent_file.in
+units metal

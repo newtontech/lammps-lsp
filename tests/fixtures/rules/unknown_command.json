@@ -1,0 +1,13 @@
+{
+  "rule_id": "lammps.command.unknown",
+  "severity": "error",
+  "code": "LAMMPS-W200",
+  "fixture": "invalid/unknown_command.in",
+  "expected_diagnostics": [
+    {
+      "code": "LAMMPS-W200",
+      "severity": "error",
+      "message_contains": "unknown command"
+    }
+  ]
+}

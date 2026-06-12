@@ -71,10 +71,7 @@ impl LanguageServer for Backend {
                 hover_provider: Some(HoverProviderCapability::Simple(true)),
                 references_provider: Some(OneOf::Left(true)),
                 completion_provider: Some(CompletionOptions {
-                    trigger_characters: Some(vec![
-                        " ".to_string(),
-                        "/".to_string(),
-                    ]),
+                    trigger_characters: Some(vec![" ".to_string(), "/".to_string()]),
                     ..Default::default()
                 }),
 
@@ -382,8 +379,7 @@ impl LanguageServer for Backend {
 
         self.document_map
             .remove(&params.text_document.uri.to_string());
-        self.tree_map
-            .remove(&params.text_document.uri.to_string());
+        self.tree_map.remove(&params.text_document.uri.to_string());
     }
 }
 

@@ -125,10 +125,7 @@ fn lsp_initialize_and_shutdown() {
             let diags = &msg["params"]["diagnostics"];
             // For a simple valid script, we may or may not get diagnostics depending on lints
             // Just verify the structure is correct
-            assert!(
-                diags.is_array(),
-                "diagnostics should be an array"
-            );
+            assert!(diags.is_array(), "diagnostics should be an array");
             break;
         }
     }
@@ -162,7 +159,10 @@ fn lsp_initialize_and_shutdown() {
     drop(stdin);
 
     let exit_status = child.wait().expect("failed to wait for child");
-    assert!(exit_status.success(), "server should exit cleanly, got {exit_status:?}");
+    assert!(
+        exit_status.success(),
+        "server should exit cleanly, got {exit_status:?}"
+    );
 }
 
 #[test]
@@ -228,7 +228,10 @@ fn lsp_diagnostics_on_invalid_script() {
     // Verify LSP diagnostic structure
     for diag in diags_arr {
         assert!(diag.get("range").is_some(), "diagnostic should have range");
-        assert!(diag.get("message").is_some(), "diagnostic should have message");
+        assert!(
+            diag.get("message").is_some(),
+            "diagnostic should have message"
+        );
         assert!(
             diag.get("severity").is_some(),
             "diagnostic should have severity"

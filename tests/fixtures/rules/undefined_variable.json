@@ -1,0 +1,13 @@
+{
+  "rule_id": "lammps.variable.undefined",
+  "severity": "error",
+  "code": "LAMMPS-E203",
+  "fixture": "invalid/undefined_variable.in",
+  "expected_diagnostics": [
+    {
+      "code": "LAMMPS-E203",
+      "severity": "error",
+      "message_contains": "undefined"
+    }
+  ]
+}

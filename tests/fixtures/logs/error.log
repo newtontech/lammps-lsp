@@ -1,0 +1,10 @@
+LAMMPS (29 Oct 2020)
+Reading data file ...
+  orthogonal box = (0.0 0.0 0.0) to (10.0 10.0 10.0)
+  1 by 1 by 1 MPI processor grid
+  reading atoms ...
+  100 atoms
+  reading velocities ...
+  100 velocities
+
+ERROR: Lost atoms: original 100 current 0

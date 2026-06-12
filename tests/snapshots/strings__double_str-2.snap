@@ -4,7 +4,7 @@ expression: result.diagnostics
 ---
 [
     Diagnostic {
-        name: "undefined identifier",
+        name: "undefined-identifier",
         severity: Error,
         span: Span {
             start: Point {
@@ -16,11 +16,13 @@ expression: result.diagnostics
                 column: 52,
             },
         },
-        message: "undefined variable `Tcold`",
-        code: None,
+        message: "LAMMPS-E203: undefined variable `Tcold`",
+        code: Some(
+            "LAMMPS-E203",
+        ),
     },
     Diagnostic {
-        name: "undefined identifier",
+        name: "undefined-identifier",
         severity: Error,
         span: Span {
             start: Point {
@@ -32,11 +34,13 @@ expression: result.diagnostics
                 column: 53,
             },
         },
-        message: "undefined variable `Tcold`",
-        code: None,
+        message: "LAMMPS-E203: undefined variable `Tcold`",
+        code: Some(
+            "LAMMPS-E203",
+        ),
     },
     Diagnostic {
-        name: "undefined identifier",
+        name: "undefined-identifier",
         severity: Error,
         span: Span {
             start: Point {
@@ -48,11 +52,13 @@ expression: result.diagnostics
                 column: 41,
             },
         },
-        message: "undefined variable `Thot`",
-        code: None,
+        message: "LAMMPS-E203: undefined variable `Thot`",
+        code: Some(
+            "LAMMPS-E203",
+        ),
     },
     Diagnostic {
-        name: "undefined identifier",
+        name: "undefined-identifier",
         severity: Error,
         span: Span {
             start: Point {
@@ -64,11 +70,13 @@ expression: result.diagnostics
                 column: 42,
             },
         },
-        message: "undefined variable `Thot`",
-        code: None,
+        message: "LAMMPS-E203: undefined variable `Thot`",
+        code: Some(
+            "LAMMPS-E203",
+        ),
     },
     Diagnostic {
-        name: "undefined identifier",
+        name: "undefined-identifier",
         severity: Error,
         span: Span {
             start: Point {
@@ -80,11 +88,13 @@ expression: result.diagnostics
                 column: 45,
             },
         },
-        message: "undefined variable `Thot`",
-        code: None,
+        message: "LAMMPS-E203: undefined variable `Thot`",
+        code: Some(
+            "LAMMPS-E203",
+        ),
     },
     Diagnostic {
-        name: "undefined identifier",
+        name: "undefined-identifier",
         severity: Error,
         span: Span {
             start: Point {
@@ -96,11 +106,13 @@ expression: result.diagnostics
                 column: 62,
             },
         },
-        message: "undefined variable `evsvolfile`",
-        code: None,
+        message: "LAMMPS-E203: undefined variable `evsvolfile`",
+        code: Some(
+            "LAMMPS-E203",
+        ),
     },
     Diagnostic {
-        name: "undefined identifier",
+        name: "undefined-identifier",
         severity: Error,
         span: Span {
             start: Point {
@@ -112,11 +124,13 @@ expression: result.diagnostics
                 column: 37,
             },
         },
-        message: "undefined variable `x`",
-        code: None,
+        message: "LAMMPS-E203: undefined variable `x`",
+        code: Some(
+            "LAMMPS-E203",
+        ),
     },
     Diagnostic {
-        name: "unused identifier",
+        name: "unused-identifier",
         severity: Warning,
         span: Span {
             start: Point {
@@ -128,11 +142,13 @@ expression: result.diagnostics
                 column: 22,
             },
         },
-        message: "unused variable `nested_quotes`",
-        code: None,
+        message: "LAMMPS-W202: unused variable `nested_quotes`",
+        code: Some(
+            "LAMMPS-W202",
+        ),
     },
     Diagnostic {
-        name: "unused identifier",
+        name: "unused-identifier",
         severity: Warning,
         span: Span {
             start: Point {
@@ -144,11 +160,13 @@ expression: result.diagnostics
                 column: 19,
             },
         },
-        message: "unused variable `outputname`",
-        code: None,
+        message: "LAMMPS-W202: unused variable `outputname`",
+        code: Some(
+            "LAMMPS-W202",
+        ),
     },
     Diagnostic {
-        name: "unused identifier",
+        name: "unused-identifier",
         severity: Warning,
         span: Span {
             start: Point {
@@ -160,11 +178,13 @@ expression: result.diagnostics
                 column: 19,
             },
         },
-        message: "unused variable `outputname`",
-        code: None,
+        message: "LAMMPS-W202: unused variable `outputname`",
+        code: Some(
+            "LAMMPS-W202",
+        ),
     },
     Diagnostic {
-        name: "unused identifier",
+        name: "unused-identifier",
         severity: Warning,
         span: Span {
             start: Point {
@@ -176,8 +196,10 @@ expression: result.diagnostics
                 column: 26,
             },
         },
-        message: "unused variable `simple_exapansion`",
-        code: None,
+        message: "LAMMPS-W202: unused variable `simple_exapansion`",
+        code: Some(
+            "LAMMPS-W202",
+        ),
     },
     Diagnostic {
         name: "string-var-expansion",

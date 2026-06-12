@@ -45,10 +45,7 @@ impl CircularVariableDependency {
                     .map(|(_, def)| def.span)
                     .unwrap_or_default();
 
-                results.push(CircularVariableDependency {
-                    cycle,
-                    span,
-                });
+                results.push(CircularVariableDependency { cycle, span });
             }
         }
 
@@ -199,7 +196,7 @@ fn detect_cycle_from(
             for dep in deps {
                 if dep == start {
                     // Found a cycle back to start
-                    let mut cycle_path = path.clone();
+                    let mut cycle_path = path;
                     cycle_path.push(dep.clone());
                     return Some(cycle_path);
                 }
