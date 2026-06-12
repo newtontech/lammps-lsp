@@ -91,6 +91,27 @@
       "kind": "official_docs",
       "label": "LAMMPS 30 Mar 2026 manual",
       "url": "https://docs.lammps.org/Manual.html"
+    },
+    {
+      "kind": "official_examples",
+      "label": "LAMMPS examples (melt tutorial)",
+      "url": "https://github.com/lammps/lammps/tree/develop/examples/melt"
     }
-  ]
+  ],
+  "llmWiki": {
+    "upstreamManifest": "raw/assets/lammps-upstream-sources.md",
+    "agentContext": "wiki/synthesis/openqc-agent-context.md",
+    "diagnosticEngine": "wiki/concepts/diagnostic-engine-v1.md",
+    "exampleInputs": [
+      "raw/assets/examples/in.melt",
+      "tests/fixtures/valid/minimal.in"
+    ],
+    "hoverCorpus": "raw/assets/lammps_docs_md",
+    "operationHints": {
+      "check": "wiki/concepts/diagnostic-engine-v1.md",
+      "hover": "wiki/entities/",
+      "complete": "wiki/synthesis/Input_Script_Workflow.md",
+      "context": "wiki/synthesis/openqc-agent-context.md"
+    }
+  }
 }

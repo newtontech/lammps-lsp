@@ -13,9 +13,12 @@ typecheck:
 	bash scripts/typecheck.sh
 
 test:
-	bash scripts/test.sh
+	cargo test --all-features
 
-check: lint typecheck test
+wiki-check:
+	bash scripts/check-llm-wiki.sh
+
+check: lint typecheck test wiki-check
 
 cleanup-merged:
 	bash scripts/cleanup_merged_worktrees.sh
