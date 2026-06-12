@@ -116,6 +116,7 @@ impl FromNode for Command {
             // NOTE: make this variant a panic for testing purposes.
             #[cfg(feature = "ast_panics")]
             c => panic!("unknown command kind {c}"),
+            #[allow(unreachable_patterns)]
             _ => Ok(Self::Error(node.range().into())),
         };
 

@@ -24,10 +24,9 @@ fn valid_fixture_exits_zero() {
     // valid.in may produce warnings (e.g. style order), but those are still
     // reported by the analyser which exits 72 on any diagnostic.
     // Verify the output mentions diagnostics or "All Good".
-    let output_text = format!("{stdout}");
     assert!(
-        output_text.contains("issue") || output_text.contains("All Good"),
-        "valid.in output should mention 'issue' or 'All Good', got: {output_text}"
+        stdout.contains("issue") || stdout.contains("All Good"),
+        "valid.in output should mention 'issue' or 'All Good', got: {stdout}"
     );
     // Accept either 0 (no diags) or 72 (warnings only) as valid.
     let code = status.code().unwrap_or(-1);

@@ -205,5 +205,6 @@ thermo_style custom step temp pe etotal
 ## 参考资料 / References
 
 :::info
-**Source**: LAMMPS input script documentation
+**Source**: [LAMMPS upstream manifest](../../raw/assets/lammps-upstream-sources.md), [melt example](../../raw/assets/examples/in.melt)
+**Related**: [OpenQC Agent Context](openqc-agent-context.md), [Common Patterns](Common_Patterns.md)
 :::

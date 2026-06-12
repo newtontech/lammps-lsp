@@ -1,5 +1,31 @@
 # LLM Wiki Change Log / LLM维基变更日志
 
+## 2026-06-13 / 2026年6月13日
+
+### Issue #32 closeout / 问题#32收尾
+
+**Created by**: dmux Worker D (Cursor Agent)
+**Purpose**: Complete upstream doc gaps, cross-references, wiki lint, and LSP capability grounding
+
+#### Raw Assets Added / 新增原始资源
+- `lammps-upstream-sources.md` — Official upstream source manifest (links, not mirrors)
+- `examples/in.melt` — Official LAMMPS melt tutorial input
+
+#### LSP / Agent Updates / LSP与Agent更新
+- `lsp-capabilities.json` — Added `llmWiki` block with operation hints and example inputs
+- `wiki/synthesis/openqc-agent-context.md` — Wiki/raw grounding table for agent operations
+- `scripts/check-llm-wiki.sh` — Lightweight index and capability path validation
+- `Makefile` — `test` target runs `cargo test --all-features`
+
+#### CI repair / CI修复
+- `src/ast/{expressions,arguments,commands}.rs` — Allow unreachable catch-all patterns under `-D warnings`
+
+#### Navigation / 导航
+- `index.md` — Links to upstream manifest, openqc-agent-context, diagnostic-engine-v1
+- `wiki/synthesis/Input_Script_Workflow.md` — Cross-links to melt example and agent context
+
+---
+
 ## 2026-06-12 / 2026年6月12日
 
 ### Documentation Expansion / 文档扩展

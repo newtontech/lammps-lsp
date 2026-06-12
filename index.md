@@ -17,6 +17,8 @@ This wiki contains comprehensive knowledge about LAMMPS molecular dynamics simul
   - `lammps-rheo-package.md` - RHEO SPH package reference
   - `lammps-advanced-tutorials.md` - Advanced tutorials compilation
   - `lammps-new-features-2024-2025.md` - Recent features changelog
+  - `lammps-upstream-sources.md` - Official upstream source manifest
+  - `examples/in.melt` - Official Lennard-Jones melt tutorial input
 
 ### [wiki/entities/](wiki/entities/) - Entity Pages / 实体页面
 LAMMPS-specific commands and concepts:
@@ -68,6 +70,8 @@ Workflows and references:
 - [Output_Files](wiki/synthesis/Output_Files.md) - Output file types
 - [Common_Patterns](wiki/synthesis/Common_Patterns.md) - Reusable patterns
 - [Advanced_Features](wiki/synthesis/Advanced_Features.md) - Advanced workflows and methods
+- [openqc-agent-context](wiki/synthesis/openqc-agent-context.md) - OpenQC agent LSP contract
+- [diagnostic-engine-v1](wiki/concepts/diagnostic-engine-v1.md) - Diagnostic envelope and blocking policy
 
 ## Project Context / 项目背景
 
@@ -99,6 +103,8 @@ Workflows and references:
 - See [entities](wiki/entities/) for specific command documentation
 - Check [concepts](wiki/concepts/) for MD fundamentals
 - Reference [synthesis](wiki/synthesis/) for integration patterns
+- See [upstream source manifest](raw/assets/lammps-upstream-sources.md) for official doc links
+- Run `bash scripts/check-llm-wiki.sh` to validate wiki navigation links
 
 ## Version / 版本
 

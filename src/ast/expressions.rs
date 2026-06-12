@@ -286,6 +286,7 @@ impl Expression {
             "ERROR" => Err(ParseExprError::ErrorNode.into()),
             #[cfg(feature = "ast_panics")]
             exp => panic!("unknown expression kind {exp}"),
+            #[allow(unreachable_patterns)]
             x => Err(ParseExprError::UnknownExpressionType(x.to_owned()).into()),
         }
         // todo!()
