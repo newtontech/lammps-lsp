@@ -1,0 +1,3 @@
+# Invalid: reference to undefined variable
+units metal
+timestep ${undefined_var}

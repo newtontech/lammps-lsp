@@ -1,0 +1,13 @@
+{
+  "rule_id": "lammps.files.missing_data",
+  "severity": "error",
+  "code": "LAMMPS-E701",
+  "fixture": "invalid/missing_data.in",
+  "expected_diagnostics": [
+    {
+      "code": "LAMMPS-E701",
+      "severity": "error",
+      "message_contains": "missing data file"
+    }
+  ]
+}

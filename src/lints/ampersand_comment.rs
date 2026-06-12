@@ -32,8 +32,14 @@ impl AmpersandInComment {
                 let col_start = col_end - 1;
                 results.push(AmpersandInComment {
                     span: Span {
-                        start: Point { row, column: col_start },
-                        end: Point { row, column: col_end },
+                        start: Point {
+                            row,
+                            column: col_start,
+                        },
+                        end: Point {
+                            row,
+                            column: col_end,
+                        },
                     },
                 });
             }

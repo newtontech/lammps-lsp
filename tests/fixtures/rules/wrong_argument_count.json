@@ -1,0 +1,12 @@
+{
+  "rule_id": "lammps.command.wrong_argument_count",
+  "severity": "error",
+  "code": "LAMMPS-W204",
+  "fixture": "invalid/wrong_argument_count.in",
+  "expected_diagnostics": [
+    {
+      "severity": "error",
+      "message_contains": "syntax error"
+    }
+  ]
+}

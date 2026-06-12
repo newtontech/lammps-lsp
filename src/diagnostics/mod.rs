@@ -141,9 +141,9 @@ impl From<Diagnostic> for lsp_types::Diagnostic {
             ..
         } = value;
 
-        let code_description = code.as_ref().map(|c| {
-            lsp_types::NumberOrString::String(c.clone())
-        });
+        let code_description = code
+            .as_ref()
+            .map(|c| lsp_types::NumberOrString::String(c.clone()));
 
         lsp_types::Diagnostic {
             range: span.into_lsp_types(),

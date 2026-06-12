@@ -1,0 +1,13 @@
+{
+  "rule_id": "lammps.log.error",
+  "severity": "error",
+  "code": "LAMMPS-E900",
+  "fixture": "logs/error.log",
+  "expected_diagnostics": [
+    {
+      "code": "LAMMPS-E900",
+      "severity": "error",
+      "message_contains": "ERROR"
+    }
+  ]
+}

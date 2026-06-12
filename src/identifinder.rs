@@ -1,6 +1,7 @@
 //! Definies the [`IdentiFinder`] type which finds and validates definitions and references.
 
 use crate::ast::{Ident, IdentType};
+use crate::lints::codes::LintCode;
 use crate::spanned_error::SpannedError;
 use crate::{ast::from_node::FromNodeError, diagnostics::Issue};
 use itertools::Itertools;
@@ -249,25 +250,23 @@ pub struct UndefinedIdent {
 }
 impl Issue for UnusedIdent {
     fn diagnostic(&self) -> crate::diagnostics::Diagnostic {
-        let name = "unused identifier";
         crate::diagnostics::Diagnostic {
-            name,
+            name: LintCode::UnusedIdentifier.label(),
             severity: crate::diagnostics::Severity::Warning,
             span: self.ident.span,
-            message: self.to_string(),
-            code: None,
+            message: format!("{}: {}", LintCode::UnusedIdentifier, self),
+            code: Some(LintCode::UnusedIdentifier.to_string()),
         }
     }
 }
 impl Issue for UndefinedIdent {
     fn diagnostic(&self) -> crate::diagnostics::Diagnostic {
-        let name = "undefined identifier";
         crate::diagnostics::Diagnostic {
-            name,
+            name: LintCode::UndefinedIdentifier.label(),
             severity: crate::diagnostics::Severity::Error,
             span: self.ident.span,
-            message: self.to_string(),
-            code: None,
+            message: format!("{}: {}", LintCode::UndefinedIdentifier, self),
+            code: Some(LintCode::UndefinedIdentifier.to_string()),
         }
     }
 }

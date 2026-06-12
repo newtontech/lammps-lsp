@@ -1,0 +1,13 @@
+{
+  "rule_id": "lammps.files.missing_include",
+  "severity": "error",
+  "code": "LAMMPS-E700",
+  "fixture": "invalid/missing_include.in",
+  "expected_diagnostics": [
+    {
+      "code": "LAMMPS-E700",
+      "severity": "error",
+      "message_contains": "missing include"
+    }
+  ]
+}

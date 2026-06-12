@@ -1,5 +1,6 @@
 use crate::ast::{self, Ast};
 use crate::diagnostics::{self, Issue};
+use crate::lints::codes::LintCode;
 use crate::spans::{Point, Span};
 use crate::styles::{ComputeStyle, FixStyle, PairStyle};
 use once_cell::sync::Lazy;
@@ -23,6 +24,17 @@ pub enum StyleType {
     Pair,
     Kspace,
     Minimize,
+}
+
+/// Returns the appropriate lint code for this style type.
+fn style_lint_code(style_type: &StyleType) -> LintCode {
+    match style_type {
+        StyleType::Fix => LintCode::InvalidFixStyle,
+        StyleType::Compute => LintCode::InvalidComputeStyle,
+        StyleType::Pair => LintCode::InvalidPairStyle,
+        StyleType::Kspace => LintCode::InvalidPairStyle,
+        StyleType::Minimize => LintCode::InvalidPairStyle,
+    }
 }
 
 /// Checks if fix, compute and pair styles are valid.
@@ -123,27 +135,32 @@ fn check_compute_and_fix_styles(tree: &Tree, text: &[u8]) -> Vec<InvalidStyle> {
 
 impl Issue for InvalidStyle {
     fn diagnostic(&self) -> diagnostics::Diagnostic {
+        let lint_code = style_lint_code(&self.style_type);
         diagnostics::Diagnostic {
-            name: "invalid style",
+            name: lint_code.label(),
             severity: diagnostics::Severity::Error,
             span: Span {
                 start: self.start,
                 end: self.end,
             },
-            message: format!("invalid {}: `{}`", self.style_type, self.name),
-            code: None,
+            message: format!(
+                "{}: invalid {}: `{}`",
+                lint_code, self.style_type, self.name
+            ),
+            code: Some(lint_code.to_string()),
         }
     }
 }
 
 impl From<InvalidStyle> for lsp_types::Diagnostic {
     fn from(value: InvalidStyle) -> Self {
+        let lint_code = style_lint_code(&value.style_type);
         lsp_types::Diagnostic::new_simple(
             lsp_types::Range {
                 start: value.start.into_lsp_type(),
                 end: value.end.into_lsp_type(),
             },
-            value.to_string(),
+            format!("{}: {}", lint_code, value),
         )
     }
 }

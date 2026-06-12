@@ -6,6 +6,7 @@ use crate::{
     ast::{Ast, Command},
     commands::CommandName,
     diagnostics::{self, Diagnostic, Issue},
+    lints::codes::LintCode,
     spans::Span,
 };
 
@@ -34,16 +35,21 @@ impl From<InvalidArguments> for InvalidCommand {
 
 impl Issue for InvalidCommand {
     fn diagnostic(&self) -> diagnostics::Diagnostic {
-        let span = match self {
-            Self::UnknownCommand(_, span) => *span,
-            Self::InvalidArguments(invalid_args) => invalid_args.range,
-        };
-        Diagnostic {
-            name: "invalid command",
-            message: self.to_string(),
-            code: None,
-            span,
-            severity: diagnostics::Severity::Error,
+        match self {
+            Self::UnknownCommand(name, span) => Diagnostic {
+                name: "invalid command",
+                message: format!("{}: unknown command `{}`", LintCode::UnknownCommand, name),
+                code: Some(LintCode::UnknownCommand.to_string()),
+                span: *span,
+                severity: diagnostics::Severity::Error,
+            },
+            Self::InvalidArguments(invalid_args) => Diagnostic {
+                name: "invalid command",
+                message: self.to_string(),
+                code: Some(LintCode::InvalidArguments.to_string()),
+                span: invalid_args.range,
+                severity: diagnostics::Severity::Error,
+            },
         }
     }
 }

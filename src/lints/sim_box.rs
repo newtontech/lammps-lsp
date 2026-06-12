@@ -61,13 +61,11 @@ impl SimBoxNotDefined {
                         });
                     }
                 }
-                Command::Fix(_) | Command::Compute(_) => {
-                    if !box_defined {
-                        results.push(SimBoxNotDefined {
-                            command_name: command.span().start.row.to_string(),
-                            span: command.span(),
-                        });
-                    }
+                Command::Fix(_) | Command::Compute(_) if !box_defined => {
+                    results.push(SimBoxNotDefined {
+                        command_name: command.span().start.row.to_string(),
+                        span: command.span(),
+                    });
                 }
                 _ => {}
             }

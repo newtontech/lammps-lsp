@@ -15,11 +15,15 @@ use crate::{
 pub mod ampersand_comment;
 pub mod circular_deps;
 pub mod codes;
+pub mod log_error;
+pub mod missing_data;
+pub mod missing_include;
 pub mod rerun_detection;
 pub mod sexp;
 pub mod sim_box;
 pub mod string_expansion;
 pub mod style_order;
+pub mod units_pair_style;
 
 /// If a fix is redefined before it is run, the first definition is useless.
 #[derive(Debug, PartialEq)]
@@ -82,7 +86,18 @@ fn fix_redef_before_run<'a>(
 /// Run all lints on the AST and source text, collecting diagnostics.
 ///
 /// This is the main entry point for the linting pipeline.
+/// `base_dir` is used for file-existence checks (include, read_data).
+/// Pass `None` to skip file-existence checks.
 pub fn run_all_lints(ast: &Ast, source: &str) -> Vec<Diagnostic> {
+    run_all_lints_with_dir(ast, source, None)
+}
+
+/// Run all lints with an optional base directory for file-existence checks.
+pub fn run_all_lints_with_dir(
+    ast: &Ast,
+    source: &str,
+    base_dir: Option<&std::path::Path>,
+) -> Vec<Diagnostic> {
     let mut diagnostics = Vec::new();
 
     // Issue #14: Ampersand in comments
@@ -115,6 +130,33 @@ pub fn run_all_lints(ast: &Ast, source: &str) -> Vec<Diagnostic> {
         diagnostics.push(issue.diagnostic());
     }
 
+    // Issue #19: Missing include file
+    for issue in missing_include::MissingInclude::find_all(ast, base_dir) {
+        diagnostics.push(issue.diagnostic());
+    }
+
+    // Issue #20: Missing data file
+    for issue in missing_data::MissingDataFile::find_all(ast, base_dir) {
+        diagnostics.push(issue.diagnostic());
+    }
+
+    // Issue #21: Suspicious units/pair_style combination
+    for issue in units_pair_style::SuspiciousUnitsPairStyle::find_all(ast) {
+        diagnostics.push(issue.diagnostic());
+    }
+
+    diagnostics
+}
+
+/// Run log-parsing lints (Issue #22) on text that may be a LAMMPS log file.
+pub fn run_log_lints(log_text: &str) -> Vec<Diagnostic> {
+    let mut diagnostics = Vec::new();
+
+    // Issue #22: LAMMPS ERROR lines in log output
+    for issue in log_error::LammpsLogError::find_all(log_text) {
+        diagnostics.push(issue.diagnostic());
+    }
+
     diagnostics
 }
 
@@ -132,6 +174,122 @@ impl Issue for RedfinedIdent<'_> {
             ],
         }
     }
+}
+
+/// Export all lint rule metadata as JSON for agent consumption (Issue #5/#12).
+pub fn export_rules_json() -> serde_json::Value {
+    use codes::LintCode;
+
+    let rules = vec![
+        rule_entry(
+            LintCode::AmpersandInComment,
+            "error",
+            "Ampersand continuation in comments is invalid",
+        ),
+        rule_entry(
+            LintCode::UnterminatedString,
+            "error",
+            "Unterminated string literal",
+        ),
+        rule_entry(
+            LintCode::UnknownCommand,
+            "warning",
+            "Unknown LAMMPS command",
+        ),
+        rule_entry(
+            LintCode::RedefinedBeforeRun,
+            "warning",
+            "Identifier redefined before run command",
+        ),
+        rule_entry(LintCode::UnusedIdentifier, "warning", "Unused identifier"),
+        rule_entry(
+            LintCode::UndefinedIdentifier,
+            "error",
+            "Undefined identifier reference",
+        ),
+        rule_entry(
+            LintCode::InvalidArguments,
+            "warning",
+            "Invalid command arguments",
+        ),
+        rule_entry(LintCode::InvalidFixArgs, "warning", "Invalid fix arguments"),
+        rule_entry(
+            LintCode::InvalidComputeArgs,
+            "warning",
+            "Invalid compute arguments",
+        ),
+        rule_entry(LintCode::InvalidFixStyle, "error", "Unknown fix style"),
+        rule_entry(
+            LintCode::InvalidComputeStyle,
+            "error",
+            "Unknown compute style",
+        ),
+        rule_entry(LintCode::InvalidPairStyle, "error", "Unknown pair style"),
+        rule_entry(
+            LintCode::StyleAfterDataRead,
+            "warning",
+            "Style defined after data read",
+        ),
+        rule_entry(
+            LintCode::SimBoxNotDefined,
+            "error",
+            "Simulation box not defined",
+        ),
+        rule_entry(
+            LintCode::MissingCreateBox,
+            "warning",
+            "Missing create_box command",
+        ),
+        rule_entry(
+            LintCode::MissingRegion,
+            "warning",
+            "Missing region definition",
+        ),
+        rule_entry(
+            LintCode::CircularVariableDependency,
+            "error",
+            "Circular variable dependency",
+        ),
+        rule_entry(
+            LintCode::StringVarExpansion,
+            "warning",
+            "String variable expansion issue",
+        ),
+        rule_entry(
+            LintCode::InvalidVarReference,
+            "error",
+            "Invalid variable reference",
+        ),
+        rule_entry(LintCode::RerunInDocs, "warning", "Rerun command detected"),
+        rule_entry(LintCode::MissingInclude, "error", "Missing include file"),
+        rule_entry(LintCode::MissingDataFile, "error", "Missing data file"),
+        rule_entry(
+            LintCode::SuspiciousUnitsPairStyle,
+            "warning",
+            "Suspicious units/pair_style combination",
+        ),
+        rule_entry(
+            LintCode::LammpsLogError,
+            "error",
+            "LAMMPS ERROR line in log output",
+        ),
+    ];
+
+    serde_json::json!({
+        "diagnostic_engine": "1.0",
+        "software": "lammps",
+        "source": "lammps-lsp",
+        "rules": rules,
+    })
+}
+
+fn rule_entry(code: codes::LintCode, severity: &str, description: &str) -> serde_json::Value {
+    serde_json::json!({
+        "code": code.to_string(),
+        "label": code.label(),
+        "severity": severity,
+        "description": description,
+    })
 }
 
 #[cfg(test)]
@@ -222,5 +380,20 @@ mod tests {
 
         let diags = run_all_lints(&ast, source);
         assert!(diags.iter().any(|d| d.name == "ampersand-in-comment"));
+    }
+
+    #[test]
+    fn export_rules_json_is_valid() {
+        let json = export_rules_json();
+        assert_eq!(json["diagnostic_engine"], "1.0");
+        let rules = json["rules"].as_array().expect("rules should be array");
+        assert!(!rules.is_empty());
+        // Check every rule has required fields
+        for rule in rules {
+            assert!(rule.get("code").is_some());
+            assert!(rule.get("label").is_some());
+            assert!(rule.get("severity").is_some());
+            assert!(rule.get("description").is_some());
+        }
     }
 }

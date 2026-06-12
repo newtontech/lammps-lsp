@@ -1,0 +1,13 @@
+{
+  "rule_id": "lammps.units.pair_style_suspicious",
+  "severity": "warning",
+  "code": "LAMMPS-W800",
+  "fixture": "invalid/suspicious_units.in",
+  "expected_diagnostics": [
+    {
+      "code": "LAMMPS-W800",
+      "severity": "warning",
+      "message_contains": "incompatible"
+    }
+  ]
+}
