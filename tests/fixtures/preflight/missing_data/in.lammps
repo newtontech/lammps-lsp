@@ -1,0 +1,9 @@
+# Preflight failure: unresolved structure artifact
+units metal
+dimension 3
+boundary p p p
+atom_style atomic
+read_data missing.data
+pair_style eam
+pair_coeff * * Cu_u3.eam
+run 100

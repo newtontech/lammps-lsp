@@ -31,3 +31,4 @@ pub mod matmaster;
 
 // Formatter (Issue #27)
 pub mod format;
+pub mod preflight;

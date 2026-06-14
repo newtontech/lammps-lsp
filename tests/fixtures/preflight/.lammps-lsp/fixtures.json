@@ -1,0 +1,22 @@
+{
+  "fixtures": [
+    {
+      "id": "valid_minimal",
+      "path": "tests/fixtures/preflight/valid_minimal",
+      "expect_ok": true,
+      "required_codes": []
+    },
+    {
+      "id": "missing_data",
+      "path": "tests/fixtures/preflight/missing_data",
+      "expect_ok": false,
+      "required_codes": ["LAMMPS602"]
+    },
+    {
+      "id": "version_keyword",
+      "path": "tests/fixtures/preflight/version_keyword",
+      "expect_ok": true,
+      "required_codes": ["LAMMPS606"]
+    }
+  ]
+}

@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use anyhow::{Context, Result};
 use clap::{Parser, Subcommand};
 use lammps_analyser::{diagnostics::Severity, format, input_script::InputScript, lints};
@@ -5,7 +7,16 @@ use serde_json::{json, Value};
 use std::path::{Path, PathBuf};
 
 const DOC_INDEX: &str = include_str!("../../docs_extract/index_map.txt");
-const OPERATIONS: &[&str] = &["check", "context", "complete", "hover", "symbols", "fix"];
+const OPERATIONS: &[&str] = &[
+    "check",
+    "context",
+    "complete",
+    "hover",
+    "symbols",
+    "fix",
+    "preflight",
+    "manifest",
+];
 
 #[derive(Debug, Parser)]
 #[command(name = "lammps-lsp-tool")]
@@ -27,6 +38,8 @@ enum Command {
         source: PathBuf,
         #[arg(long, default_value = "json")]
         format: String,
+        #[arg(long)]
+        fail_on_blocking: bool,
     },
     /// Export all lint rules as JSON
     Lint {
@@ -101,6 +114,21 @@ enum Command {
         #[arg(long, default_value_t = 0)]
         character: usize,
     },
+    /// Run universal generated-input preflight checks
+    Preflight {
+        source: PathBuf,
+        #[arg(long, default_value = "json")]
+        format: String,
+        #[arg(long)]
+        fail_on_blocking: bool,
+    },
+    /// Export fleet preflight manifest JSON
+    Manifest {
+        #[arg(long)]
+        source: Option<PathBuf>,
+        #[arg(long, default_value = "json")]
+        format: String,
+    },
 }
 
 #[derive(Debug, Subcommand)]
@@ -113,48 +141,95 @@ enum LintSub {
 
 fn main() -> Result<()> {
     let cli = Cli::parse();
-    match cli.command {
-        Command::Capabilities { .. } => capabilities(),
-        Command::Check { source, .. } => check(source),
-        Command::Lint { sub } => lint_cmd(sub),
-        Command::Explain { rule } => explain_rule(&rule),
-        Command::TestStatic { source, .. } => test_static(source),
+    let exit_code = match cli.command {
+        Command::Capabilities { .. } => {
+            capabilities()?;
+            0
+        }
+        Command::Check {
+            source,
+            fail_on_blocking,
+            ..
+        } => check(source, fail_on_blocking)?,
+        Command::Lint { sub } => {
+            lint_cmd(sub)?;
+            0
+        }
+        Command::Explain { rule } => {
+            explain_rule(&rule)?;
+            0
+        }
+        Command::TestStatic { source, .. } => {
+            test_static(source)?;
+            0
+        }
         Command::Fmt {
             files,
             write,
             check,
-        } => fmt_files(&files, write, check),
+        } => {
+            fmt_files(&files, write, check)?;
+            0
+        }
         Command::Context {
             source,
             line,
             character,
             ..
-        } => agent_operation(source, "context", line, character),
+        } => {
+            agent_operation(source, "context", line, character)?;
+            0
+        }
         Command::Complete {
             source,
             line,
             character,
             ..
-        } => agent_operation(source, "complete", line, character),
+        } => {
+            agent_operation(source, "complete", line, character)?;
+            0
+        }
         Command::Hover {
             source,
             line,
             character,
             ..
-        } => agent_operation(source, "hover", line, character),
+        } => {
+            agent_operation(source, "hover", line, character)?;
+            0
+        }
         Command::Symbols {
             source,
             line,
             character,
             ..
-        } => agent_operation(source, "symbols", line, character),
+        } => {
+            agent_operation(source, "symbols", line, character)?;
+            0
+        }
         Command::Fix {
             source,
             line,
             character,
             ..
-        } => agent_operation(source, "fix", line, character),
+        } => {
+            agent_operation(source, "fix", line, character)?;
+            0
+        }
+        Command::Preflight {
+            source,
+            fail_on_blocking,
+            ..
+        } => preflight(source, fail_on_blocking)?,
+        Command::Manifest { source, .. } => {
+            manifest(source)?;
+            0
+        }
+    };
+    if exit_code != 0 {
+        std::process::exit(exit_code);
     }
+    Ok(())
 }
 
 fn capabilities() -> Result<()> {
@@ -211,13 +286,159 @@ fn find_manifest() -> Result<Option<serde_json::Value>> {
     Ok(None)
 }
 
-fn check(source: PathBuf) -> Result<()> {
-    let diagnostics = collect_diagnostics_json(&source)?;
+fn check(source: PathBuf, fail_on_blocking: bool) -> Result<i32> {
+    let input_path = if source.is_dir() {
+        resolve_preflight_input(&source)?
+    } else {
+        source
+    };
+    let payload = build_check_payload(&input_path, "check")?;
+    println!("{}", serde_json::to_string_pretty(&payload)?);
+    let blocking = payload
+        .get("summary")
+        .and_then(|summary| summary.get("blocking"))
+        .and_then(|value| value.as_u64())
+        .unwrap_or(0);
+    Ok(if fail_on_blocking && blocking > 0 { 1 } else { 0 })
+}
+
+fn preflight(source: PathBuf, fail_on_blocking: bool) -> Result<i32> {
+    let payload = build_preflight_payload(&source)?;
+    println!("{}", serde_json::to_string_pretty(&payload)?);
+    let blocking = payload
+        .get("summary")
+        .and_then(|summary| summary.get("blocking"))
+        .and_then(|value| value.as_u64())
+        .unwrap_or(0);
+    Ok(if fail_on_blocking && blocking > 0 { 1 } else { 0 })
+}
+
+fn manifest(source: Option<PathBuf>) -> Result<()> {
+    let fixtures = load_fixture_manifest(source.as_deref())?;
     println!(
         "{}",
-        serde_json::to_string_pretty(&base_payload(&source, "check", diagnostics))?
+        serde_json::to_string_pretty(&lammps_analyser::preflight::fleet_manifest(
+            &fixtures
+        ))?
     );
     Ok(())
+}
+
+fn build_check_payload(source: &Path, operation: &str) -> Result<Value> {
+    let mut diagnostics = collect_diagnostics_json(source)?;
+    let (artifacts, version_assumption) = maybe_collect_preflight(source, &mut diagnostics)?;
+    Ok(base_payload(
+        source,
+        operation,
+        diagnostics,
+        artifacts,
+        version_assumption,
+    ))
+}
+
+fn build_preflight_payload(source: &Path) -> Result<Value> {
+    let input_path = resolve_preflight_input(source)?;
+    let case_dir = if source.is_dir() {
+        source.to_path_buf()
+    } else {
+        source.parent().unwrap_or(source).to_path_buf()
+    };
+    let intent = lammps_analyser::preflight::load_intent(&case_dir);
+    let text = std::fs::read_to_string(&input_path).context("file must be UTF-8 encoded")?;
+    let script = InputScript::new(&text).context("failed to parse preflight input")?;
+    let (mut diagnostics, graph) =
+        lammps_analyser::preflight::preflight_diagnostics(&input_path, &script.ast, intent.as_ref());
+    diagnostics = dedupe_preflight_overlap(&[], diagnostics);
+    let version_assumption = lammps_analyser::preflight::resolve_version_assumption(intent.as_ref());
+    Ok(base_payload(
+        &input_path,
+        "preflight",
+        diagnostics,
+        graph.to_json(),
+        Some(version_assumption),
+    ))
+}
+
+fn resolve_preflight_input(source: &Path) -> Result<PathBuf> {
+    if source.is_file() {
+        return Ok(source.to_path_buf());
+    }
+    lammps_analyser::preflight::resolve_primary_input(source)
+        .ok_or_else(|| anyhow::anyhow!("no primary LAMMPS input found in {}", source.display()))
+}
+
+fn maybe_collect_preflight(
+    source: &Path,
+    diagnostics: &mut Vec<Value>,
+) -> Result<(Vec<Value>, Option<Value>)> {
+    let case_dir = if source.is_dir() {
+        source.to_path_buf()
+    } else if lammps_analyser::preflight::looks_like_workspace(source.parent().unwrap_or(source)) {
+        source.parent().unwrap_or(source).to_path_buf()
+    } else {
+        return Ok((Vec::new(), None));
+    };
+    if !lammps_analyser::preflight::looks_like_workspace(&case_dir) {
+        return Ok((Vec::new(), None));
+    }
+    let input_path = if source.is_file() {
+        source.to_path_buf()
+    } else {
+        resolve_preflight_input(source)?
+    };
+    let intent = lammps_analyser::preflight::load_intent(&case_dir);
+    let text = std::fs::read_to_string(&input_path).context("file must be UTF-8 encoded")?;
+    let script = InputScript::new(&text).context("failed to parse preflight input")?;
+    let (preflight, graph) =
+        lammps_analyser::preflight::preflight_diagnostics(&input_path, &script.ast, intent.as_ref());
+    diagnostics.extend(dedupe_preflight_overlap(diagnostics.as_slice(), preflight));
+    let version_assumption = lammps_analyser::preflight::resolve_version_assumption(intent.as_ref());
+    Ok((graph.to_json(), Some(version_assumption)))
+}
+
+fn dedupe_preflight_overlap(existing: &[Value], preflight: Vec<Value>) -> Vec<Value> {
+    const OVERLAP: &[(&str, &str)] = &[
+        ("LAMMPS-E700", "LAMMPS603"),
+        ("LAMMPS-E701", "LAMMPS602"),
+    ];
+    let legacy_codes: HashSet<&str> = existing
+        .iter()
+        .filter_map(|diag| diag.get("code").and_then(|value| value.as_str()))
+        .collect();
+    preflight
+        .into_iter()
+        .filter(|diag| {
+            let code = diag.get("code").and_then(|value| value.as_str()).unwrap_or("");
+            !OVERLAP.iter().any(|(legacy, preflight_code)| {
+                legacy_codes.contains(legacy) && preflight_code == &code
+            })
+        })
+        .collect()
+}
+
+fn load_fixture_manifest(source: Option<&Path>) -> Result<Vec<Value>> {
+    let Some(source) = source else {
+        return Ok(Vec::new());
+    };
+    let case_dir = if source.is_dir() {
+        source.to_path_buf()
+    } else {
+        source.parent().unwrap_or(source).to_path_buf()
+    };
+    let fixtures_path = case_dir.join(".lammps-lsp").join("fixtures.json");
+    if !fixtures_path.exists() {
+        return Ok(Vec::new());
+    }
+    let payload: Value = serde_json::from_str(&std::fs::read_to_string(fixtures_path)?)?;
+    Ok(match payload {
+        Value::Array(items) => items,
+        Value::Object(map) => map
+            .get("fixtures")
+            .and_then(Value::as_array)
+            .cloned()
+            .unwrap_or_default(),
+        _ => Vec::new(),
+    })
 }
 
 fn collect_diagnostics_json(source: &Path) -> Result<Vec<Value>> {
@@ -257,7 +478,13 @@ fn collect_diagnostics_json(source: &Path) -> Result<Vec<Value>> {
     })
 }
 
-fn base_payload(source: &Path, operation: &str, diagnostics: Vec<Value>) -> Value {
+fn base_payload(
+    source: &Path,
+    operation: &str,
+    diagnostics: Vec<Value>,
+    artifacts: Vec<Value>,
+    version_assumption: Option<Value>,
+) -> Value {
     let blocking = diagnostics
         .iter()
         .filter(|item| {
@@ -266,6 +493,12 @@ fn base_payload(source: &Path, operation: &str, diagnostics: Vec<Value>) -> Valu
                 .unwrap_or(false)
         })
         .count();
+    let mut facts = json!({
+        "artifacts": artifacts,
+    });
+    if let Some(version_assumption) = version_assumption {
+        facts["version_assumption"] = version_assumption;
+    }
     json!({
         "uri": file_uri(source),
         "operation": operation,
@@ -273,7 +506,9 @@ fn base_payload(source: &Path, operation: &str, diagnostics: Vec<Value>) -> Valu
         "version": "1.0",
         "software": "lammps",
         "diagnostic_engine": "1.0",
+        "preflight_envelope": "DiagnosticEnvelope/v1",
         "diagnostics": diagnostics,
+        "facts": facts,
         "summary": {
             "count": diagnostics.len(),
             "blocking": blocking,
@@ -291,8 +526,15 @@ fn base_payload(source: &Path, operation: &str, diagnostics: Vec<Value>) -> Valu
 
 fn agent_operation(source: PathBuf, operation: &str, line: usize, character: usize) -> Result<()> {
     let text = std::fs::read_to_string(&source).context("file must be UTF-8 encoded")?;
-    let diagnostics = collect_diagnostics_json(&source)?;
-    let mut payload = base_payload(&source, operation, diagnostics.clone());
+    let mut diagnostics = collect_diagnostics_json(&source)?;
+    let (artifacts, version_assumption) = maybe_collect_preflight(&source, &mut diagnostics)?;
+    let mut payload = base_payload(
+        &source,
+        operation,
+        diagnostics.clone(),
+        artifacts,
+        version_assumption,
+    );
     payload["position"] = json!({"line": line, "character": character});
 
     match operation {
