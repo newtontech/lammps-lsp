@@ -7,7 +7,13 @@ use serde_json::{json, Value};
 use std::path::{Path, PathBuf};
 
 const DOC_INDEX: &str = include_str!("../../docs_extract/index_map.txt");
+const SKILL_YAML: &str = include_str!("../../skill/skill.yaml");
+const SKILL_MD: &str = include_str!("../../skill/SKILL.md");
+const SKILL_REFERENCES_README: &str = include_str!("../../skill/references/README.md");
 const OPERATIONS: &[&str] = &[
+    "capabilities",
+    "skill-spec",
+    "skill-export",
     "check",
     "context",
     "complete",
@@ -32,6 +38,18 @@ enum Command {
     Capabilities {
         #[arg(long, default_value = "json")]
         format: String,
+    },
+    /// Print the packaged pluggable skill manifest
+    #[command(name = "skill-spec")]
+    SkillSpec {
+        #[arg(long, default_value = "yaml")]
+        format: String,
+    },
+    /// Export the packaged pluggable skill directory
+    #[command(name = "skill-export")]
+    SkillExport {
+        #[arg(long)]
+        output: PathBuf,
     },
     /// Check a LAMMPS input script for diagnostics
     Check {
@@ -146,6 +164,14 @@ fn main() -> Result<()> {
             capabilities()?;
             0
         }
+        Command::SkillSpec { format } => {
+            skill_spec(&format)?;
+            0
+        }
+        Command::SkillExport { output } => {
+            skill_export(&output)?;
+            0
+        }
         Command::Check {
             source,
             fail_on_blocking,
@@ -254,10 +280,58 @@ fn capabilities() -> Result<()> {
                 "openqc-context",
             ],
             "agentCli": {
-                "operations": ["capabilities", "check", "context", "complete", "hover", "symbols", "fix"],
+                "operations": OPERATIONS,
                 "jsonFormat": true,
                 "failOnBlocking": true,
             },
+        }))?
+    );
+    Ok(())
+}
+
+fn skill_spec(format: &str) -> Result<()> {
+    match format {
+        "yaml" | "yml" => {
+            print!("{SKILL_YAML}");
+        }
+        "json" => {
+            let manifest: serde_yaml::Value = serde_yaml::from_str(SKILL_YAML)?;
+            println!("{}", serde_json::to_string_pretty(&manifest)?);
+        }
+        other => {
+            anyhow::bail!("unsupported format: {other}");
+        }
+    }
+    Ok(())
+}
+
+fn skill_export(output: &Path) -> Result<()> {
+    std::fs::create_dir_all(output.join("references"))
+        .with_context(|| format!("failed to create {}", output.display()))?;
+    std::fs::write(output.join("skill.yaml"), SKILL_YAML)
+        .with_context(|| format!("failed to write {}", output.join("skill.yaml").display()))?;
+    std::fs::write(output.join("SKILL.md"), SKILL_MD)
+        .with_context(|| format!("failed to write {}", output.join("SKILL.md").display()))?;
+    std::fs::write(
+        output.join("references").join("README.md"),
+        SKILL_REFERENCES_README,
+    )
+    .with_context(|| {
+        format!(
+            "failed to write {}",
+            output.join("references").join("README.md").display()
+        )
+    })?;
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&json!({
+            "ok": true,
+            "output": output,
+            "files": [
+                "skill.yaml",
+                "SKILL.md",
+                "references/README.md",
+            ],
         }))?
     );
     Ok(())
@@ -299,7 +373,11 @@ fn check(source: PathBuf, fail_on_blocking: bool) -> Result<i32> {
         .and_then(|summary| summary.get("blocking"))
         .and_then(|value| value.as_u64())
         .unwrap_or(0);
-    Ok(if fail_on_blocking && blocking > 0 { 1 } else { 0 })
+    Ok(if fail_on_blocking && blocking > 0 {
+        1
+    } else {
+        0
+    })
 }
 
 fn preflight(source: PathBuf, fail_on_blocking: bool) -> Result<i32> {
@@ -310,16 +388,18 @@ fn preflight(source: PathBuf, fail_on_blocking: bool) -> Result<i32> {
         .and_then(|summary| summary.get("blocking"))
         .and_then(|value| value.as_u64())
         .unwrap_or(0);
-    Ok(if fail_on_blocking && blocking > 0 { 1 } else { 0 })
+    Ok(if fail_on_blocking && blocking > 0 {
+        1
+    } else {
+        0
+    })
 }
 
 fn manifest(source: Option<PathBuf>) -> Result<()> {
     let fixtures = load_fixture_manifest(source.as_deref())?;
     println!(
         "{}",
-        serde_json::to_string_pretty(&lammps_analyser::preflight::fleet_manifest(
-            &fixtures
-        ))?
+        serde_json::to_string_pretty(&lammps_analyser::preflight::fleet_manifest(&fixtures))?
     );
     Ok(())
 }
@@ -346,10 +426,14 @@ fn build_preflight_payload(source: &Path) -> Result<Value> {
     let intent = lammps_analyser::preflight::load_intent(&case_dir);
     let text = std::fs::read_to_string(&input_path).context("file must be UTF-8 encoded")?;
     let script = InputScript::new(&text).context("failed to parse preflight input")?;
-    let (mut diagnostics, graph) =
-        lammps_analyser::preflight::preflight_diagnostics(&input_path, &script.ast, intent.as_ref());
+    let (mut diagnostics, graph) = lammps_analyser::preflight::preflight_diagnostics(
+        &input_path,
+        &script.ast,
+        intent.as_ref(),
+    );
     diagnostics = dedupe_preflight_overlap(&[], diagnostics);
-    let version_assumption = lammps_analyser::preflight::resolve_version_assumption(intent.as_ref());
+    let version_assumption =
+        lammps_analyser::preflight::resolve_version_assumption(intent.as_ref());
     Ok(base_payload(
         &input_path,
         "preflight",
@@ -389,18 +473,19 @@ fn maybe_collect_preflight(
     let intent = lammps_analyser::preflight::load_intent(&case_dir);
     let text = std::fs::read_to_string(&input_path).context("file must be UTF-8 encoded")?;
     let script = InputScript::new(&text).context("failed to parse preflight input")?;
-    let (preflight, graph) =
-        lammps_analyser::preflight::preflight_diagnostics(&input_path, &script.ast, intent.as_ref());
+    let (preflight, graph) = lammps_analyser::preflight::preflight_diagnostics(
+        &input_path,
+        &script.ast,
+        intent.as_ref(),
+    );
     diagnostics.extend(dedupe_preflight_overlap(diagnostics.as_slice(), preflight));
-    let version_assumption = lammps_analyser::preflight::resolve_version_assumption(intent.as_ref());
+    let version_assumption =
+        lammps_analyser::preflight::resolve_version_assumption(intent.as_ref());
     Ok((graph.to_json(), Some(version_assumption)))
 }
 
 fn dedupe_preflight_overlap(existing: &[Value], preflight: Vec<Value>) -> Vec<Value> {
-    const OVERLAP: &[(&str, &str)] = &[
-        ("LAMMPS-E700", "LAMMPS603"),
-        ("LAMMPS-E701", "LAMMPS602"),
-    ];
+    const OVERLAP: &[(&str, &str)] = &[("LAMMPS-E700", "LAMMPS603"), ("LAMMPS-E701", "LAMMPS602")];
     let legacy_codes: HashSet<&str> = existing
         .iter()
         .filter_map(|diag| diag.get("code").and_then(|value| value.as_str()))
@@ -408,7 +493,10 @@ fn dedupe_preflight_overlap(existing: &[Value], preflight: Vec<Value>) -> Vec<Va
     preflight
         .into_iter()
         .filter(|diag| {
-            let code = diag.get("code").and_then(|value| value.as_str()).unwrap_or("");
+            let code = diag
+                .get("code")
+                .and_then(|value| value.as_str())
+                .unwrap_or("");
             !OVERLAP.iter().any(|(legacy, preflight_code)| {
                 legacy_codes.contains(legacy) && preflight_code == &code
             })

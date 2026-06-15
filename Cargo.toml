@@ -1,6 +1,6 @@
 [package]
 name = "lammps-analyser"
-version = "0.1.0-pre-release-3"
+version = "0.1.0-rc.1"
 edition = "2021"
 repository = "https://github.com/chappertron/lammps-analyser"
 license = "GPL-2.0-only"
@@ -30,6 +30,7 @@ once_cell = "1.19.0"
 owo-colors = { version = "4.1", features = ["supports-colors"] }
 serde = { version = "1.0.171", features = ["derive"] }
 serde_json = "1.0.105"
+serde_yaml = "0.9"
 thiserror = "1.0.44"
 url = "2"
 tokio = { version = "1.40.0", features = [

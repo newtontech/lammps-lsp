@@ -1,0 +1,32 @@
+schema: scientific-lsp-skill/v1
+name: lammps
+software: lammps
+display_name: LAMMPS
+description: LAMMPS input preflight for generated molecular dynamics scripts.
+package:
+  name: lammps-lsp
+  install: pip install lammps-lsp
+entrypoints:
+  server: lmp-lsp
+  tool: lammps-lsp-tool
+file_patterns:
+  - "*.lmp"
+  - "*.lammps"
+  - "*.lmps"
+  - in.lammps
+operations:
+  - capabilities
+  - check
+  - context
+  - complete
+  - hover
+  - symbols
+  - fix
+diagnostic_contract: DiagnosticEnvelope/v1
+blocking_policy:
+  mode: warning-only
+  description: Use --fail-on-blocking when generated inputs must be launch-ready.
+source_provenance:
+  - kind: official_docs
+    label: LAMMPS manual
+    url: https://docs.lammps.org/Manual.html
