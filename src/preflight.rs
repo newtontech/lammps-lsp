@@ -118,9 +118,7 @@ pub fn looks_like_workspace(case_dir: &Path) -> bool {
         "input.lmp",
         "lammps.in",
     ];
-    INPUT_NAMES
-        .iter()
-        .any(|name| case_dir.join(name).is_file())
+    INPUT_NAMES.iter().any(|name| case_dir.join(name).is_file())
         || case_dir
             .read_dir()
             .ok()
@@ -137,7 +135,13 @@ pub fn looks_like_workspace(case_dir: &Path) -> bool {
 }
 
 pub fn resolve_primary_input(case_dir: &Path) -> Option<PathBuf> {
-    for name in ["in.lammps", "in.lmp", "input.lammps", "input.lmp", "lammps.in"] {
+    for name in [
+        "in.lammps",
+        "in.lmp",
+        "input.lammps",
+        "input.lmp",
+        "lammps.in",
+    ] {
         let candidate = case_dir.join(name);
         if candidate.is_file() {
             return Some(candidate);
@@ -155,7 +159,10 @@ pub fn resolve_primary_input(case_dir: &Path) -> Option<PathBuf> {
                     .and_then(|ext| ext.to_str())
                     .is_some_and(|ext| matches!(ext, "lmp" | "lammps" | "lmps" | "in"))
         })
-        .min_by_key(|path| path.file_name().map(|name| name.to_string_lossy().to_string()))
+        .min_by_key(|path| {
+            path.file_name()
+                .map(|name| name.to_string_lossy().to_string())
+        })
 }
 
 pub fn build_artifact_graph(input_path: &Path, ast: &Ast, base_dir: &Path) -> ArtifactGraph {
@@ -326,7 +333,8 @@ pub fn preflight_diagnostics(
         diagnostics.push(make_diagnostic(
             CODE_READ_DATA_WITHOUT_PAIR_STYLE,
             "warning",
-            "read_data is declared but no pair_style was found before submission preflight".to_string(),
+            "read_data is declared but no pair_style was found before submission preflight"
+                .to_string(),
             input_path,
             1,
             "semantic consistency",
@@ -338,7 +346,11 @@ pub fn preflight_diagnostics(
         ));
     }
 
-    diagnostics.extend(keyword_version_diagnostics(input_path, ast, &version_assumption));
+    diagnostics.extend(keyword_version_diagnostics(
+        input_path,
+        ast,
+        &version_assumption,
+    ));
     diagnostics.extend(large_timestep_diagnostics(input_path, ast, intent));
     diagnostics.extend(version_assumption_diagnostic(&version_assumption, intent));
 
@@ -484,11 +496,7 @@ fn keyword_version_diagnostics(
     diagnostics
 }
 
-fn large_timestep_diagnostics(
-    input_path: &Path,
-    ast: &Ast,
-    intent: Option<&Value>,
-) -> Vec<Value> {
+fn large_timestep_diagnostics(input_path: &Path, ast: &Ast, intent: Option<&Value>) -> Vec<Value> {
     let threshold = intent
         .and_then(|value| value.get("timestep_warning"))
         .and_then(Value::as_f64)
@@ -513,9 +521,7 @@ fn large_timestep_diagnostics(
         diagnostics.push(make_diagnostic(
             CODE_LARGE_TIMESTEP,
             "warning",
-            format!(
-                "timestep={dt} exceeds the conservative workflow threshold ({threshold})"
-            ),
+            format!("timestep={dt} exceeds the conservative workflow threshold ({threshold})"),
             input_path,
             cmd.start.row + 1,
             "preflight/runtime-risk",
@@ -532,10 +538,7 @@ fn large_timestep_diagnostics(
     diagnostics
 }
 
-fn version_assumption_diagnostic(
-    version_assumption: &Value,
-    intent: Option<&Value>,
-) -> Vec<Value> {
+fn version_assumption_diagnostic(version_assumption: &Value, intent: Option<&Value>) -> Vec<Value> {
     if version_assumption
         .get("exact_runtime_known")
         .and_then(Value::as_bool)

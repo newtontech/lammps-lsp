@@ -1,0 +1,26 @@
+# Valid LAMMPS input: Energy minimization
+# Self-contained: no external file references
+units metal
+atom_style atomic
+dimension 3
+boundary p p p
+
+# Create FCC copper
+lattice fcc 3.615
+region box block 0 3 0 3 0 3
+create_box 1 box
+create_atoms 1 box
+mass 1 63.546
+
+# Lennard-Jones potential (self-contained)
+pair_style lj/cut 2.5
+pair_coeff 1 1 1.0 1.0 2.5
+
+# Minimize energy
+thermo 10
+minimize 1.0e-4 1.0e-6 1000 10000
+
+# Run dynamics
+timestep 0.001
+fix 1 all nvt temp 300.0 300.0 0.1
+run 100

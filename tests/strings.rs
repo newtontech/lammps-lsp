@@ -2,8 +2,7 @@ use lammps_analyser::input_script::InputScript;
 
 #[test]
 fn double_str() {
-    let source =
-        include_str!("./fixtures/string/in.double_string").replace("\r\n", "\n");
+    let source = include_str!("./fixtures/string/in.double_string").replace("\r\n", "\n");
 
     let result = InputScript::new(&source).expect("valid input script");
     insta::assert_debug_snapshot!(result.ast);

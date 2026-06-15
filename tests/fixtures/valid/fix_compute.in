@@ -1,4 +1,5 @@
 # Valid script with fix and compute
+# Self-contained: no external file references
 units metal
 dimension 3
 boundary p p p
@@ -9,8 +10,8 @@ region box block 0 4 0 4 0 4
 create_box 1 box
 create_atoms 1 box
 
-pair_style eam/alloy
-pair_coeff * * Cu_u3.eam
+pair_style lj/cut 2.5
+pair_coeff 1 1 1.0 1.0 2.5
 
 compute myTemp all temp
 fix 1 all nvt temp 300.0 300.0 0.1

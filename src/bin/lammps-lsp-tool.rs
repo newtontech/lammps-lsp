@@ -299,7 +299,11 @@ fn check(source: PathBuf, fail_on_blocking: bool) -> Result<i32> {
         .and_then(|summary| summary.get("blocking"))
         .and_then(|value| value.as_u64())
         .unwrap_or(0);
-    Ok(if fail_on_blocking && blocking > 0 { 1 } else { 0 })
+    Ok(if fail_on_blocking && blocking > 0 {
+        1
+    } else {
+        0
+    })
 }
 
 fn preflight(source: PathBuf, fail_on_blocking: bool) -> Result<i32> {
@@ -310,16 +314,18 @@ fn preflight(source: PathBuf, fail_on_blocking: bool) -> Result<i32> {
         .and_then(|summary| summary.get("blocking"))
         .and_then(|value| value.as_u64())
         .unwrap_or(0);
-    Ok(if fail_on_blocking && blocking > 0 { 1 } else { 0 })
+    Ok(if fail_on_blocking && blocking > 0 {
+        1
+    } else {
+        0
+    })
 }
 
 fn manifest(source: Option<PathBuf>) -> Result<()> {
     let fixtures = load_fixture_manifest(source.as_deref())?;
     println!(
         "{}",
-        serde_json::to_string_pretty(&lammps_analyser::preflight::fleet_manifest(
-            &fixtures
-        ))?
+        serde_json::to_string_pretty(&lammps_analyser::preflight::fleet_manifest(&fixtures))?
     );
     Ok(())
 }
@@ -346,10 +352,14 @@ fn build_preflight_payload(source: &Path) -> Result<Value> {
     let intent = lammps_analyser::preflight::load_intent(&case_dir);
     let text = std::fs::read_to_string(&input_path).context("file must be UTF-8 encoded")?;
     let script = InputScript::new(&text).context("failed to parse preflight input")?;
-    let (mut diagnostics, graph) =
-        lammps_analyser::preflight::preflight_diagnostics(&input_path, &script.ast, intent.as_ref());
+    let (mut diagnostics, graph) = lammps_analyser::preflight::preflight_diagnostics(
+        &input_path,
+        &script.ast,
+        intent.as_ref(),
+    );
     diagnostics = dedupe_preflight_overlap(&[], diagnostics);
-    let version_assumption = lammps_analyser::preflight::resolve_version_assumption(intent.as_ref());
+    let version_assumption =
+        lammps_analyser::preflight::resolve_version_assumption(intent.as_ref());
     Ok(base_payload(
         &input_path,
         "preflight",
@@ -389,18 +399,19 @@ fn maybe_collect_preflight(
     let intent = lammps_analyser::preflight::load_intent(&case_dir);
     let text = std::fs::read_to_string(&input_path).context("file must be UTF-8 encoded")?;
     let script = InputScript::new(&text).context("failed to parse preflight input")?;
-    let (preflight, graph) =
-        lammps_analyser::preflight::preflight_diagnostics(&input_path, &script.ast, intent.as_ref());
+    let (preflight, graph) = lammps_analyser::preflight::preflight_diagnostics(
+        &input_path,
+        &script.ast,
+        intent.as_ref(),
+    );
     diagnostics.extend(dedupe_preflight_overlap(diagnostics.as_slice(), preflight));
-    let version_assumption = lammps_analyser::preflight::resolve_version_assumption(intent.as_ref());
+    let version_assumption =
+        lammps_analyser::preflight::resolve_version_assumption(intent.as_ref());
     Ok((graph.to_json(), Some(version_assumption)))
 }
 
 fn dedupe_preflight_overlap(existing: &[Value], preflight: Vec<Value>) -> Vec<Value> {
-    const OVERLAP: &[(&str, &str)] = &[
-        ("LAMMPS-E700", "LAMMPS603"),
-        ("LAMMPS-E701", "LAMMPS602"),
-    ];
+    const OVERLAP: &[(&str, &str)] = &[("LAMMPS-E700", "LAMMPS603"), ("LAMMPS-E701", "LAMMPS602")];
     let legacy_codes: HashSet<&str> = existing
         .iter()
         .filter_map(|diag| diag.get("code").and_then(|value| value.as_str()))
@@ -408,7 +419,10 @@ fn dedupe_preflight_overlap(existing: &[Value], preflight: Vec<Value>) -> Vec<Va
     preflight
         .into_iter()
         .filter(|diag| {
-            let code = diag.get("code").and_then(|value| value.as_str()).unwrap_or("");
+            let code = diag
+                .get("code")
+                .and_then(|value| value.as_str())
+                .unwrap_or("");
             !OVERLAP.iter().any(|(legacy, preflight_code)| {
                 legacy_codes.contains(legacy) && preflight_code == &code
             })
