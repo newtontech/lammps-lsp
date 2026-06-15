@@ -1,0 +1,9 @@
+# Invalid: deprecated style usage
+# Tests: deprecated/removed keyword detection
+units metal
+dimension 3
+boundary p p p
+atom_style atomic
+
+# Deprecated: use "fix nvt" instead
+fix 1 all temp/nvt 300.0 300.0 0.1

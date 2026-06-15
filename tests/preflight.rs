@@ -37,7 +37,10 @@ fn valid_preflight_fixture_is_clean() {
         "--format",
         "json",
     ]);
-    assert_eq!(payload.get("operation").and_then(Value::as_str), Some("preflight"));
+    assert_eq!(
+        payload.get("operation").and_then(Value::as_str),
+        Some("preflight")
+    );
     assert_eq!(
         payload.get("preflight_envelope").and_then(Value::as_str),
         Some("DiagnosticEnvelope/v1")

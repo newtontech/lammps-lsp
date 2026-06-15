@@ -1,0 +1,9 @@
+# Invalid: enum value violation
+# Tests: invalid enum value detection
+units metal
+dimension 3
+boundary p p p
+atom_style atomic
+
+# Invalid boundary style 'x' (should be p, f, s, m, or r)
+boundary x p p
