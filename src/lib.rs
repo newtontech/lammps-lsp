@@ -1,3 +1,5 @@
+//! Library entry point for lammps-analyser.
+//! See also: wiki/synthesis/openqc-agent-context.md
 // Public Interface
 pub mod diagnostic_report;
 pub mod input_script;

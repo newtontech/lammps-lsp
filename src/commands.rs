@@ -1,3 +1,5 @@
+//! LAMMPS command enumeration and argument validation.
+//! See also: wiki/entities/Run_Command.md
 /// A macro for constructing the CommandName enum.
 /// Takes a list of the variant Identifiers, actual command names and the minimimum number of
 /// arguments needed for the command.

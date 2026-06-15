@@ -1,3 +1,5 @@
+//! See also: wiki/synthesis/Input_Script_Workflow.md
+//! See also: wiki/synthesis/Common_Patterns.md
 //! Issue #27: Safe formatter for LAMMPS input scripts.
 //!
 //! Provides a safe, idempotent formatter that normalises:

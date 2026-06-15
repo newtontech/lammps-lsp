@@ -1,3 +1,5 @@
+//! See also: wiki/concepts/diagnostic-engine-v1.md
+//! See also: wiki/synthesis/openqc-agent-context.md
 //! Universal generated-input preflight capabilities for the LAMMPS fleet backend.
 //!
 //! Implements the four cross-fleet capabilities tracked in newtontech/lammps-lsp#33:

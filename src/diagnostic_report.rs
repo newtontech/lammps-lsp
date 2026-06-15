@@ -1,3 +1,5 @@
+//! Diagnostic report traits for LAMMPS input validation.
+//! See also: wiki/concepts/diagnostic-engine-v1.md
 use std::fmt::Display;
 
 pub trait FileNameReport {

@@ -1,3 +1,6 @@
+//! lammps-lsp-tool: Agent-facing Diagnostic Engine v1 CLI.
+//! See also: wiki/synthesis/openqc-agent-context.md
+//! See also: wiki/entities/Run_Command.md
 use std::collections::HashSet;
 
 use anyhow::{Context, Result};
