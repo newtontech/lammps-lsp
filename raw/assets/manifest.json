@@ -1,0 +1,43 @@
+{
+  "entries": [
+    {
+      "path": "examples/in.melt",
+      "source_type": "raw_asset",
+      "source_url": "https://github.com/lammps/lammps/blob/develop/examples/melt/in.melt",
+      "stable_id": "raw-assets-examples-in-melt"
+    },
+    {
+      "path": "lammps-advanced-tutorials.md",
+      "source_type": "raw_asset",
+      "source_url": "https://github.com/newtontech/lammps-lsp/blob/master/raw/assets/lammps-advanced-tutorials.md",
+      "stable_id": "raw-assets-lammps-advanced-tutorials-md"
+    },
+    {
+      "path": "lammps-ml-potentials.md",
+      "source_type": "raw_asset",
+      "source_url": "https://github.com/newtontech/lammps-lsp/blob/master/raw/assets/lammps-ml-potentials.md",
+      "stable_id": "raw-assets-lammps-ml-potentials-md"
+    },
+    {
+      "path": "lammps-new-features-2024-2025.md",
+      "source_type": "raw_asset",
+      "source_url": "https://github.com/newtontech/lammps-lsp/blob/master/raw/assets/lammps-new-features-2024-2025.md",
+      "stable_id": "raw-assets-lammps-new-features-2024-2025-md"
+    },
+    {
+      "path": "lammps-rheo-package.md",
+      "source_type": "raw_asset",
+      "source_url": "https://github.com/newtontech/lammps-lsp/blob/master/raw/assets/lammps-rheo-package.md",
+      "stable_id": "raw-assets-lammps-rheo-package-md"
+    },
+    {
+      "path": "lammps-upstream-sources.md",
+      "source_type": "raw_asset",
+      "source_url": "https://github.com/newtontech/lammps-lsp/blob/master/raw/assets/lammps-upstream-sources.md",
+      "stable_id": "raw-assets-lammps-upstream-sources-md"
+    }
+  ],
+  "manifest_version": "1.0.0",
+  "repository": "newtontech/lammps-lsp",
+  "schema_version": "provenance-manifest-v1"
+}

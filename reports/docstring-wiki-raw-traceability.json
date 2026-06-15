@@ -1,0 +1,299 @@
+{
+  "docstrings": [
+    {
+      "path": "src/bin/lammps-lsp-tool.rs",
+      "symbol": "lammps-lsp-tool",
+      "wikiPath": "wiki/synthesis/openqc-agent-context.md"
+    },
+    {
+      "path": "src/bin/lammps-lsp-tool.rs",
+      "symbol": "lammps-lsp-tool",
+      "wikiPath": "wiki/entities/Run_Command.md"
+    },
+    {
+      "path": "src/commands.rs",
+      "symbol": "commands",
+      "wikiPath": "wiki/entities/Run_Command.md"
+    },
+    {
+      "path": "src/diagnostic_report.rs",
+      "symbol": "diagnostic_report",
+      "wikiPath": "wiki/concepts/diagnostic-engine-v1.md"
+    },
+    {
+      "path": "src/format.rs",
+      "symbol": "format_lammps",
+      "wikiPath": "wiki/synthesis/Input_Script_Workflow.md"
+    },
+    {
+      "path": "src/format.rs",
+      "symbol": "format_lammps",
+      "wikiPath": "wiki/synthesis/Common_Patterns.md"
+    },
+    {
+      "path": "src/lib.rs",
+      "symbol": "lib",
+      "wikiPath": "wiki/synthesis/openqc-agent-context.md"
+    },
+    {
+      "path": "src/preflight.rs",
+      "symbol": "resolve_version_assumption",
+      "wikiPath": "wiki/concepts/diagnostic-engine-v1.md"
+    },
+    {
+      "path": "src/preflight.rs",
+      "symbol": "resolve_version_assumption",
+      "wikiPath": "wiki/synthesis/openqc-agent-context.md"
+    }
+  ],
+  "generatedAt": "1970-01-01T00:00:00+00:00",
+  "languageId": "lammps",
+  "rawManifest": {
+    "ok": true,
+    "path": "raw/assets/manifest.json"
+  },
+  "repository": "newtontech/lammps-lsp",
+  "ruleIds": [
+    {
+      "code": "LAMMPS-INPUT-ERROR-100",
+      "sourcePath": "src/bin/lammps-lsp-tool.rs"
+    },
+    {
+      "code": "LAMMPS-INPUT-ERROR-700",
+      "sourcePath": "src/bin/lammps-lsp-tool.rs"
+    },
+    {
+      "code": "LAMMPS-INPUT-ERROR-701",
+      "sourcePath": "src/bin/lammps-lsp-tool.rs"
+    },
+    {
+      "code": "LAMMPS-INPUT-ERROR-100",
+      "sourcePath": "src/diagnostics/mod.rs"
+    },
+    {
+      "code": "LAMMPS-INPUT-ERROR-100",
+      "sourcePath": "src/lints/ampersand_comment.rs"
+    },
+    {
+      "code": "LAMMPS-INPUT-ERROR-500",
+      "sourcePath": "src/lints/circular_deps.rs"
+    },
+    {
+      "code": "LAMMPS-INPUT-ERROR-100",
+      "sourcePath": "src/lints/codes.rs"
+    },
+    {
+      "code": "LAMMPS-INPUT-ERROR-101",
+      "sourcePath": "src/lints/codes.rs"
+    },
+    {
+      "code": "LAMMPS-INPUT-ERROR-203",
+      "sourcePath": "src/lints/codes.rs"
+    },
+    {
+      "code": "LAMMPS-INPUT-ERROR-300",
+      "sourcePath": "src/lints/codes.rs"
+    },
+    {
+      "code": "LAMMPS-INPUT-ERROR-301",
+      "sourcePath": "src/lints/codes.rs"
+    },
+    {
+      "code": "LAMMPS-INPUT-ERROR-302",
+      "sourcePath": "src/lints/codes.rs"
+    },
+    {
+      "code": "LAMMPS-INPUT-ERROR-400",
+      "sourcePath": "src/lints/codes.rs"
+    },
+    {
+      "code": "LAMMPS-INPUT-ERROR-500",
+      "sourcePath": "src/lints/codes.rs"
+    },
+    {
+      "code": "LAMMPS-INPUT-ERROR-502",
+      "sourcePath": "src/lints/codes.rs"
+    },
+    {
+      "code": "LAMMPS-INPUT-ERROR-700",
+      "sourcePath": "src/lints/codes.rs"
+    },
+    {
+      "code": "LAMMPS-INPUT-ERROR-701",
+      "sourcePath": "src/lints/codes.rs"
+    },
+    {
+      "code": "LAMMPS-INPUT-ERROR-900",
+      "sourcePath": "src/lints/codes.rs"
+    },
+    {
+      "code": "LAMMPS-INPUT-WARNING-200",
+      "sourcePath": "src/lints/codes.rs"
+    },
+    {
+      "code": "LAMMPS-INPUT-WARNING-201",
+      "sourcePath": "src/lints/codes.rs"
+    },
+    {
+      "code": "LAMMPS-INPUT-WARNING-202",
+      "sourcePath": "src/lints/codes.rs"
+    },
+    {
+      "code": "LAMMPS-INPUT-WARNING-204",
+      "sourcePath": "src/lints/codes.rs"
+    },
+    {
+      "code": "LAMMPS-INPUT-WARNING-205",
+      "sourcePath": "src/lints/codes.rs"
+    },
+    {
+      "code": "LAMMPS-INPUT-WARNING-206",
+      "sourcePath": "src/lints/codes.rs"
+    },
+    {
+      "code": "LAMMPS-INPUT-WARNING-303",
+      "sourcePath": "src/lints/codes.rs"
+    },
+    {
+      "code": "LAMMPS-INPUT-WARNING-401",
+      "sourcePath": "src/lints/codes.rs"
+    },
+    {
+      "code": "LAMMPS-INPUT-WARNING-402",
+      "sourcePath": "src/lints/codes.rs"
+    },
+    {
+      "code": "LAMMPS-INPUT-WARNING-501",
+      "sourcePath": "src/lints/codes.rs"
+    },
+    {
+      "code": "LAMMPS-INPUT-WARNING-600",
+      "sourcePath": "src/lints/codes.rs"
+    },
+    {
+      "code": "LAMMPS-INPUT-WARNING-800",
+      "sourcePath": "src/lints/codes.rs"
+    },
+    {
+      "code": "LAMMPS-INPUT-ERROR-900",
+      "sourcePath": "src/lints/log_error.rs"
+    },
+    {
+      "code": "LAMMPS-INPUT-ERROR-701",
+      "sourcePath": "src/lints/missing_data.rs"
+    },
+    {
+      "code": "LAMMPS-INPUT-ERROR-700",
+      "sourcePath": "src/lints/missing_include.rs"
+    },
+    {
+      "code": "LAMMPS-INPUT-WARNING-201",
+      "sourcePath": "src/lints/mod.rs"
+    },
+    {
+      "code": "LAMMPS-INPUT-WARNING-600",
+      "sourcePath": "src/lints/rerun_detection.rs"
+    },
+    {
+      "code": "LAMMPS-INPUT-ERROR-400",
+      "sourcePath": "src/lints/sim_box.rs"
+    },
+    {
+      "code": "LAMMPS-INPUT-WARNING-501",
+      "sourcePath": "src/lints/string_expansion.rs"
+    },
+    {
+      "code": "LAMMPS-INPUT-WARNING-303",
+      "sourcePath": "src/lints/style_order.rs"
+    },
+    {
+      "code": "LAMMPS-INPUT-WARNING-800",
+      "sourcePath": "src/lints/units_pair_style.rs"
+    }
+  ],
+  "schemaVersion": "openqc.lsp.traceability.v1",
+  "serverId": "lammps-lsp",
+  "sourceUrls": [
+    {
+      "rawPath": "raw/assets/examples/in.melt",
+      "url": "https://github.com/lammps/lammps/blob/develop/examples/melt/in.melt"
+    },
+    {
+      "rawPath": "raw/assets/examples/in.melt",
+      "url": "https://github.com/newtontech/lammps-lsp/blob/master/raw/assets/examples/in.melt"
+    },
+    {
+      "rawPath": "raw/assets/lammps-advanced-tutorials.md",
+      "url": "https://github.com/newtontech/lammps-lsp/blob/master/raw/assets/lammps-advanced-tutorials.md"
+    },
+    {
+      "rawPath": "raw/assets/lammps-ml-potentials.md",
+      "url": "https://github.com/newtontech/lammps-lsp/blob/master/raw/assets/lammps-ml-potentials.md"
+    },
+    {
+      "rawPath": "raw/assets/lammps-new-features-2024-2025.md",
+      "url": "https://github.com/newtontech/lammps-lsp/blob/master/raw/assets/lammps-new-features-2024-2025.md"
+    },
+    {
+      "rawPath": "raw/assets/lammps-rheo-package.md",
+      "url": "https://github.com/newtontech/lammps-lsp/blob/master/raw/assets/lammps-rheo-package.md"
+    },
+    {
+      "rawPath": "raw/assets/lammps-upstream-sources.md",
+      "url": "https://github.com/newtontech/lammps-lsp/blob/master/raw/assets/lammps-upstream-sources.md"
+    },
+    {
+      "rawPath": "raw/assets/lammps-upstream-sources.md",
+      "url": "https://github.com/newtontech/lammps-lsp/blob/master/raw/assets/lammps-upstream-sources.md"
+    }
+  ],
+  "summary": {
+    "brokenWikiLinks": 0,
+    "docstringsLinked": 9,
+    "docstringsTotal": 9,
+    "rawManifestFailures": 0,
+    "wikiSourcesWithoutRaw": 0
+  },
+  "wikiSources": [
+    {
+      "rawPath": "raw/assets/lammps-advanced-tutorials.md",
+      "sourceUrl": "https://github.com/newtontech/lammps-lsp/blob/master/raw/assets/lammps-advanced-tutorials.md",
+      "wikiPath": "wiki/synthesis/Advanced_Features.md"
+    },
+    {
+      "rawPath": "raw/assets/lammps-ml-potentials.md",
+      "sourceUrl": "https://github.com/newtontech/lammps-lsp/blob/master/raw/assets/lammps-ml-potentials.md",
+      "wikiPath": "wiki/synthesis/Advanced_Features.md"
+    },
+    {
+      "rawPath": "raw/assets/lammps-new-features-2024-2025.md",
+      "sourceUrl": "https://github.com/newtontech/lammps-lsp/blob/master/raw/assets/lammps-new-features-2024-2025.md",
+      "wikiPath": "wiki/synthesis/Advanced_Features.md"
+    },
+    {
+      "rawPath": "raw/assets/lammps-rheo-package.md",
+      "sourceUrl": "https://github.com/newtontech/lammps-lsp/blob/master/raw/assets/lammps-rheo-package.md",
+      "wikiPath": "wiki/synthesis/Advanced_Features.md"
+    },
+    {
+      "rawPath": "raw/assets/examples/in.melt",
+      "sourceUrl": "https://github.com/newtontech/lammps-lsp/blob/master/raw/assets/examples/in.melt",
+      "wikiPath": "wiki/synthesis/Input_Script_Workflow.md"
+    },
+    {
+      "rawPath": "raw/assets/lammps-upstream-sources.md",
+      "sourceUrl": "https://github.com/newtontech/lammps-lsp/blob/master/raw/assets/lammps-upstream-sources.md",
+      "wikiPath": "wiki/synthesis/Input_Script_Workflow.md"
+    },
+    {
+      "rawPath": "raw/assets/examples/in.melt",
+      "sourceUrl": "https://github.com/lammps/lammps/blob/develop/examples/melt/in.melt",
+      "wikiPath": "wiki/synthesis/openqc-agent-context.md"
+    },
+    {
+      "rawPath": "raw/assets/lammps-upstream-sources.md",
+      "sourceUrl": "https://github.com/newtontech/lammps-lsp/blob/master/raw/assets/lammps-upstream-sources.md",
+      "wikiPath": "wiki/synthesis/openqc-agent-context.md"
+    }
+  ]
+}
