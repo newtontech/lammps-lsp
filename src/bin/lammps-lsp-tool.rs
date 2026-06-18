@@ -10,7 +10,13 @@ use serde_json::{json, Value};
 use std::path::{Path, PathBuf};
 
 const DOC_INDEX: &str = include_str!("../../docs_extract/index_map.txt");
+const SKILL_YAML: &str = include_str!("../../skill/skill.yaml");
+const SKILL_MD: &str = include_str!("../../skill/SKILL.md");
+const SKILL_REFERENCES_README: &str = include_str!("../../skill/references/README.md");
 const OPERATIONS: &[&str] = &[
+    "capabilities",
+    "skill-spec",
+    "skill-export",
     "check",
     "context",
     "complete",
@@ -35,6 +41,18 @@ enum Command {
     Capabilities {
         #[arg(long, default_value = "json")]
         format: String,
+    },
+    /// Print the packaged pluggable skill manifest
+    #[command(name = "skill-spec")]
+    SkillSpec {
+        #[arg(long, default_value = "yaml")]
+        format: String,
+    },
+    /// Export the packaged pluggable skill directory
+    #[command(name = "skill-export")]
+    SkillExport {
+        #[arg(long)]
+        output: PathBuf,
     },
     /// Check a LAMMPS input script for diagnostics
     Check {
@@ -149,6 +167,14 @@ fn main() -> Result<()> {
             capabilities()?;
             0
         }
+        Command::SkillSpec { format } => {
+            skill_spec(&format)?;
+            0
+        }
+        Command::SkillExport { output } => {
+            skill_export(&output)?;
+            0
+        }
         Command::Check {
             source,
             fail_on_blocking,
@@ -257,10 +283,58 @@ fn capabilities() -> Result<()> {
                 "openqc-context",
             ],
             "agentCli": {
-                "operations": ["capabilities", "check", "context", "complete", "hover", "symbols", "fix"],
+                "operations": OPERATIONS,
                 "jsonFormat": true,
                 "failOnBlocking": true,
             },
+        }))?
+    );
+    Ok(())
+}
+
+fn skill_spec(format: &str) -> Result<()> {
+    match format {
+        "yaml" | "yml" => {
+            print!("{SKILL_YAML}");
+        }
+        "json" => {
+            let manifest: serde_yaml::Value = serde_yaml::from_str(SKILL_YAML)?;
+            println!("{}", serde_json::to_string_pretty(&manifest)?);
+        }
+        other => {
+            anyhow::bail!("unsupported format: {other}");
+        }
+    }
+    Ok(())
+}
+
+fn skill_export(output: &Path) -> Result<()> {
+    std::fs::create_dir_all(output.join("references"))
+        .with_context(|| format!("failed to create {}", output.display()))?;
+    std::fs::write(output.join("skill.yaml"), SKILL_YAML)
+        .with_context(|| format!("failed to write {}", output.join("skill.yaml").display()))?;
+    std::fs::write(output.join("SKILL.md"), SKILL_MD)
+        .with_context(|| format!("failed to write {}", output.join("SKILL.md").display()))?;
+    std::fs::write(
+        output.join("references").join("README.md"),
+        SKILL_REFERENCES_README,
+    )
+    .with_context(|| {
+        format!(
+            "failed to write {}",
+            output.join("references").join("README.md").display()
+        )
+    })?;
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&json!({
+            "ok": true,
+            "output": output,
+            "files": [
+                "skill.yaml",
+                "SKILL.md",
+                "references/README.md",
+            ],
         }))?
     );
     Ok(())
