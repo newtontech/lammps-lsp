@@ -1,8 +1,14 @@
+use clap::Parser;
 use lammps_analyser::lsp::Backend;
 use tower_lsp::{LspService, Server};
 
+#[derive(Debug, Parser)]
+#[command(name = "lammps-lsp", version)]
+struct Cli {}
+
 #[tokio::main]
 async fn main() {
+    Cli::parse();
     let stdin = tokio::io::stdin();
     let stdout = tokio::io::stdout();
 

@@ -5,6 +5,9 @@
   "software": "lammps",
   "displayName": "LAMMPS",
   "languageId": "lammps",
+  "repository": "newtontech/lammps-lsp",
+  "packageName": "lammps-lsp",
+  "packageVersion": "0.1.0-pre.4",
   "executable": "lmp-lsp",
   "defaultBranch": "master",
   "filePatterns": [
@@ -90,6 +93,12 @@
     "repoName": "lammps-lsp",
     "contextContract": "DSLAuthoringContext",
     "diagnosticEnvelope": "DiagnosticEnvelope/v1"
+  },
+  "releaseProvenance": {
+    "status": "candidate",
+    "channel": "prerelease",
+    "artifactLock": "release/artifacts.json",
+    "verification": "scripts/verify-release-artifacts.py"
   },
   "sourceProvenance": [
     {

@@ -577,8 +577,8 @@ dependencies = [
 ]
 
 [[package]]
-name = "lammps-analyser"
-version = "0.1.0-pre-release-3"
+name = "lammps-lsp"
+version = "0.1.0-pre.4"
 dependencies = [
  "anyhow",
  "cc",

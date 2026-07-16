@@ -1,4 +1,4 @@
-.PHONY: install format lint typecheck test check cleanup-merged traceability-report traceability-check
+.PHONY: install format lint typecheck test check release-check cleanup-merged traceability-report traceability-check
 
 install:
 	bash scripts/install.sh
@@ -25,6 +25,11 @@ wiki-check:
 	bash scripts/check-llm-wiki.sh
 
 check: lint typecheck test traceability-check wiki-check
+
+release-check: check
+	python3 scripts/verify-release-artifacts.py --contract-only
+	cargo package --locked --allow-dirty
+	cargo dist plan
 
 cleanup-merged:
 	bash scripts/cleanup_merged_worktrees.sh

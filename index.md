@@ -115,6 +115,6 @@ Expanded: 2026-06-12 (added RHEO, ML potentials, plugins, Python API, advanced f
 ## Source / 来源
 
 :::info
-**Project**: https://github.com/chappertron/lammps-analyser
+**Project**: https://github.com/newtontech/lammps-lsp
 **LAMMPS**: https://lammps.org/
 :::
