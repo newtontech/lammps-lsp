@@ -200,8 +200,16 @@ fn artifact_lock_matches_the_github_only_cargo_dist_workflow() {
     let workflow = fs::read_to_string(root.join(".github/workflows/release.yml"))
         .expect("release workflow must exist");
     assert!(workflow.contains("v0.22.1/cargo-dist-installer.sh"));
+    assert!(workflow.contains("workflow_dispatch:"));
+    assert!(workflow.contains("Verify immutable release ref"));
+    assert!(workflow.contains("windows-2025"));
+    assert!(workflow.contains("ubuntu-24.04"));
+    assert!(workflow.contains("macos-15-intel"));
+    assert!(workflow.contains("matrix.targets[0] == 'aarch64-apple-darwin' && 'macos-15'"));
+    assert!(workflow.contains("RELEASE_COMMIT: \"${{ needs.plan.outputs.release-commit }}\""));
     assert!(workflow.contains("python3 scripts/verify-release-artifacts.py artifacts"));
     assert!(!workflow.contains("cargo publish"));
+    assert!(!workflow.contains("crates.io"));
 }
 
 #[test]
