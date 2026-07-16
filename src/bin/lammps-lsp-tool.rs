@@ -10,6 +10,7 @@ use serde_json::{json, Value};
 use std::path::{Path, PathBuf};
 
 const DOC_INDEX: &str = include_str!("../../docs_extract/index_map.txt");
+const EMBEDDED_CAPABILITIES: &str = include_str!("../../lsp-capabilities.json");
 const OPERATIONS: &[&str] = &[
     "check",
     "context",
@@ -24,6 +25,7 @@ const OPERATIONS: &[&str] = &[
 #[derive(Debug, Parser)]
 #[command(name = "lammps-lsp-tool")]
 #[command(about = "Agent-facing Diagnostic Engine v1 CLI for LAMMPS inputs")]
+#[command(version)]
 struct Cli {
     #[command(subcommand)]
     command: Command,
@@ -240,29 +242,9 @@ fn capabilities() -> Result<()> {
         println!("{}", serde_json::to_string_pretty(&manifest)?);
         return Ok(());
     }
-    println!(
-        "{}",
-        serde_json::to_string_pretty(&json!({
-            "schema": "OpenQCLspCapabilities",
-            "version": 1,
-            "software": "lammps",
-            "capabilities": [
-                "diagnostics",
-                "rich-diagnostics",
-                "completion",
-                "hover",
-                "symbols",
-                "fix-preview",
-                "llm-wiki",
-                "openqc-context",
-            ],
-            "agentCli": {
-                "operations": ["capabilities", "check", "context", "complete", "hover", "symbols", "fix"],
-                "jsonFormat": true,
-                "failOnBlocking": true,
-            },
-        }))?
-    );
+    let manifest: Value = serde_json::from_str(EMBEDDED_CAPABILITIES)
+        .context("embedded lsp-capabilities.json must be valid JSON")?;
+    println!("{}", serde_json::to_string_pretty(&manifest)?);
     Ok(())
 }
 

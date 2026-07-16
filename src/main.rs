@@ -14,6 +14,7 @@ use std::path::Path;
 use tree_sitter::Parser;
 
 #[derive(Debug, clap::Parser)]
+#[command(name = "lammps-analyser", version)]
 struct Cli {
     /// LAMMPS input script to check
     source: String,

@@ -1,4 +1,31 @@
-# LAMMPS-Analyser Changelog
+# LAMMPS LSP Changelog
+
+## [0.1.0-pre.4] - Unreleased
+
+### Added
+
+- A locked cargo-dist artifact contract for macOS (Apple Silicon and Intel),
+  Linux x86_64, and Windows x86_64 archives.
+- GitHub Release installers, SHA-256 sidecars, and pre-upload artifact
+  verification.
+- Release smoke coverage for the server commands, agent CLI, valid and invalid
+  LAMMPS inputs, and LAMMPS error logs.
+
+### Changed
+
+- The authoritative package identity is now `lammps-lsp` in the
+  `newtontech/lammps-lsp` repository.
+- `lammps-analyser`, `lammps-lsp`, `lammps-lsp-tool`, and the legacy `lmp-lsp`
+  alias report the same `0.1.0-pre.4` version.
+- The agent capability response embeds package and candidate-release provenance,
+  including when the executable is used outside a source checkout.
+
+### Distribution
+
+- This prerelease is GitHub Release only. Publishing to crates.io is explicitly
+  outside the scope of `0.1.0-pre.4`.
+- The release workflow and artifact lock prepare tag `v0.1.0-pre.4`; this entry
+  remains unreleased until that tag is intentionally created after merge.
 
 ## Initial Release 0.1.0
 
@@ -24,4 +51,3 @@
 
 - Scripts to convert LAMMPS documentation files to Markdown and extract `fix`,`pair` and `compute` styles
 - A parser that converts a `tree-sitter` tree of the script into an abstract syntax tree.
-

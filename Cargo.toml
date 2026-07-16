@@ -1,14 +1,36 @@
 [package]
-name = "lammps-analyser"
-version = "0.1.0-pre-release-3"
+name = "lammps-lsp"
+version = "0.1.0-pre.4"
 edition = "2021"
-repository = "https://github.com/chappertron/lammps-analyser"
+autobins = false
+repository = "https://github.com/newtontech/lammps-lsp"
+homepage = "https://github.com/newtontech/lammps-lsp"
 license = "GPL-2.0-only"
 description = "A CLI tool and language server for LAMMPS simulation input scripts."
 
 default-run = "lammps-analyser"
 
 exclude = ["/ci", "images/", ".*", "bacon.toml", "_typos.toml"]
+
+[lib]
+name = "lammps_analyser"
+path = "src/lib.rs"
+
+[[bin]]
+name = "lammps-analyser"
+path = "src/main.rs"
+
+[[bin]]
+name = "lammps-lsp"
+path = "src/bin/lammps-lsp.rs"
+
+[[bin]]
+name = "lammps-lsp-tool"
+path = "src/bin/lammps-lsp-tool.rs"
+
+[[bin]]
+name = "lmp-lsp"
+path = "src/bin/lmp-lsp.rs"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
