@@ -43,6 +43,12 @@ on:
   push:
     tags:
       - '**[0-9]+.[0-9]+.[0-9]+*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing immutable release tag to recover
+        required: true
+        type: string
 
 jobs:
   # Run 'cargo dist plan' (or host) to determine what tasks we need to do
@@ -50,15 +56,34 @@ jobs:
     runs-on: "ubuntu-latest"
     outputs:
       val: ${{ steps.plan.outputs.manifest }}
-      tag: ${{ !github.event.pull_request && github.ref_name || '' }}
-      tag-flag: ${{ !github.event.pull_request && format('--tag={0}', github.ref_name) || '' }}
-      publishing: ${{ !github.event.pull_request }}
+      tag: ${{ steps.release-ref.outputs.tag }}
+      tag-flag: ${{ steps.release-ref.outputs.tag && format('--tag={0}', steps.release-ref.outputs.tag) || '' }}
+      publishing: ${{ github.event_name != 'pull_request' }}
+      release-commit: ${{ steps.release-ref.outputs.sha }}
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      DIST_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref }}
+          fetch-depth: 0
           submodules: recursive
+      - id: release-ref
+        name: Verify immutable release ref
+        shell: bash
+        run: |
+          if [[ "${GITHUB_EVENT_NAME}" == "pull_request" ]]; then
+            echo "tag=" >> "$GITHUB_OUTPUT"
+            echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          [[ "$DIST_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+([.-][0-9A-Za-z.-]+)?$ ]]
+          tag_sha="$(git rev-list -n 1 "$DIST_TAG")"
+          test "$(git rev-parse HEAD)" = "$tag_sha"
+          test "${DIST_TAG#v}" = "$(cargo metadata --no-deps --format-version 1 | jq -r '.packages[] | select(.name == "lammps-lsp") | .version')"
+          echo "tag=$DIST_TAG" >> "$GITHUB_OUTPUT"
+          echo "sha=$tag_sha" >> "$GITHUB_OUTPUT"
       - name: Install cargo-dist
         # we specify bash to get pipefail; it guards against the `curl` command
         # failing. otherwise `sh` won't catch that `curl` returned non-0
@@ -76,7 +101,7 @@ jobs:
       # but also really annoying to build CI around when it needs secrets to work right.)
       - id: plan
         run: |
-          cargo dist ${{ (!github.event.pull_request && format('host --steps=create --tag={0}', github.ref_name)) || 'plan' }} --output-format=json > plan-dist-manifest.json
+          cargo dist ${{ (github.event_name != 'pull_request' && format('host --steps=create --tag={0}', steps.release-ref.outputs.tag)) || 'plan' }} --output-format=json > plan-dist-manifest.json
           echo "cargo dist ran successfully"
           cat plan-dist-manifest.json
           echo "manifest=$(jq -c "." plan-dist-manifest.json)" >> "$GITHUB_OUTPUT"
@@ -106,7 +131,7 @@ jobs:
       # - 1 "global" task that builds universal installers
       # - N "local" tasks that build each platform's binaries and platform-specific installers
       matrix: ${{ fromJson(needs.plan.outputs.val).ci.github.artifacts_matrix }}
-    runs-on: ${{ matrix.runner }}
+    runs-on: ${{ matrix.targets[0] == 'x86_64-pc-windows-msvc' && 'windows-2025' || matrix.targets[0] == 'x86_64-unknown-linux-gnu' && 'ubuntu-24.04' || matrix.targets[0] == 'x86_64-apple-darwin' && 'macos-15-intel' || matrix.targets[0] == 'aarch64-apple-darwin' && 'macos-15' || matrix.runner }}
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       BUILD_MANIFEST_NAME: target/distrib/${{ join(matrix.targets, '-') }}-dist-manifest.json
@@ -116,6 +141,8 @@ jobs:
           git config --global core.longpaths true
       - uses: actions/checkout@v4
         with:
+          ref: ${{ needs.plan.outputs.tag || github.ref }}
+          fetch-depth: 0
           submodules: recursive
       - name: Install cargo-dist
         run: ${{ matrix.install_dist }}
@@ -167,6 +194,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: ${{ needs.plan.outputs.tag || github.ref }}
+          fetch-depth: 0
           submodules: recursive
       - name: Install cached cargo-dist
         uses: actions/download-artifact@v4
@@ -216,6 +245,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: ${{ needs.plan.outputs.tag || github.ref }}
+          fetch-depth: 0
           submodules: recursive
       - name: Install cached cargo-dist
         uses: actions/download-artifact@v4
@@ -261,7 +292,7 @@ jobs:
           PRERELEASE_FLAG: "${{ fromJson(steps.host.outputs.manifest).announcement_is_prerelease && '--prerelease' || '' }}"
           ANNOUNCEMENT_TITLE: "${{ fromJson(steps.host.outputs.manifest).announcement_title }}"
           ANNOUNCEMENT_BODY: "${{ fromJson(steps.host.outputs.manifest).announcement_github_body }}"
-          RELEASE_COMMIT: "${{ github.sha }}"
+          RELEASE_COMMIT: "${{ needs.plan.outputs.release-commit }}"
         run: |
           # Write and read notes from a file to avoid quoting breaking things
           echo "$ANNOUNCEMENT_BODY" > $RUNNER_TEMP/notes.txt
