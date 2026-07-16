@@ -220,6 +220,26 @@ fn artifact_verifier_checks_contract_and_rejects_an_empty_release() {
         String::from_utf8_lossy(&contract.stderr)
     );
 
+    let windows_path_regression = Command::new("python3")
+        .args([
+            "-c",
+            concat!(
+                "import runpy, sys; ",
+                "m = runpy.run_path(sys.argv[1]); ",
+                "assert m['normalize_manifest_path'](r'release\\artifacts.json') ",
+                "== 'release/artifacts.json'"
+            ),
+        ])
+        .arg(&verifier)
+        .current_dir(&root)
+        .output()
+        .expect("failed to run Windows path regression check");
+    assert!(
+        windows_path_regression.status.success(),
+        "Windows path normalization failed: {}",
+        String::from_utf8_lossy(&windows_path_regression.stderr)
+    );
+
     let unique = SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .expect("clock before epoch")

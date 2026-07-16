@@ -25,6 +25,11 @@ def load_json(path: Path) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+def normalize_manifest_path(path: str) -> str:
+    """Return a repository-relative path in the manifest's POSIX form."""
+    return path.replace("\\", "/")
+
+
 def verify_contract(lock: dict) -> None:
     package = lock["package"]
     cargo_dist = lock["cargoDist"]
@@ -71,8 +76,10 @@ def verify_contract(lock: dict) -> None:
     }
     if capability_contract != expected_capabilities:
         fail("capabilities release metadata does not match artifact lock")
-    if capabilities.get("releaseProvenance", {}).get("artifactLock") != str(
-        LOCK_PATH.relative_to(ROOT)
+    expected_lock_path = normalize_manifest_path(str(LOCK_PATH.relative_to(ROOT)))
+    if (
+        capabilities.get("releaseProvenance", {}).get("artifactLock")
+        != expected_lock_path
     ):
         fail("capabilities artifactLock does not point to the locked manifest")
     release_provenance = capabilities.get("releaseProvenance", {})
